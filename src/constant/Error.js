@@ -1,0 +1,1 @@
+export const domainError = "Please enter correct domain."
