@@ -4,7 +4,7 @@ export default function BottomNavigator() {
   return (
       <>
           {/* Sticky Bottom Bar */}
-        <div className="fixed bottom-0 left-64 right-0 bg-background border-t px-lg py-4 z-40 flex items-center justify-between">
+        <div className="fixed bottom-0 left-0 xl:left-64 right-0 bg-background border-t px-lg py-4 z-40 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button className="px-5 py-3 text-on-surface-variant font-bold flex items-center gap-2 hover:bg-surface-container-high rounded-xl transition-colors">
               <span className="material-symbols-outlined">arrow_back</span> Back

@@ -62,6 +62,7 @@ export default function AddQuestion() {
                     </p>
                   </div>
                 </div>
-              </section></div>
+      </section>
+    </div>
   )
 }

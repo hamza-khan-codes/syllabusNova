@@ -3,8 +3,7 @@
     title: "",
     description: "",
     category: "",
-    subject: "",
-    thumbnail: "",
+    cover: "",
   },
 
   structure: {
@@ -12,7 +11,7 @@
     isSectionWise: false,
     totalQuestions: 0,
     totalMarks: 0,
-    passingMarks: 0,
+    passingPercentage: 0,
     negativeMarking: false,
     negativeMarks: 0,
     sections: [],

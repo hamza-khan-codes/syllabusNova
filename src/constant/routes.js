@@ -9,11 +9,11 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
 
   CREATETEST: "/createtest",
-  TESTINFO: "test-info",
-  ADDQUESTION: "add-question",
-  TESTSETTING: "test-setting",
-  TESTSTRUCTURE: "test-structure",
-  TESTPUBLISH:"test-publish",
+  TESTINFO: "/createtest/test-info",
+  ADDQUESTION: "/createtest/add-question",
+  TESTSETTING: "/createtest/test-setting",
+  TESTSTRUCTURE: "/createtest/test-structure",
+  TESTPUBLISH:"/createtest/test-publish",
 
   CATEGORY :"/category",
   PROFILE: "/profile",

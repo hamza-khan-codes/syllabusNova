@@ -4,6 +4,97 @@ export default function TestSummerySidebar() {
       {/* Right Sidebar (Fixed in desktop context) */}
       <aside className="w-full md:w-80 space-y-6">
         <div className=" space-y-6">
+          <div className="w-full space-y-6 xl:w-80">
+                  <div className="sticky top-24 rounded-2xl border border-primary/30 bg-card p-6 shadow-lg">
+                    <h3 className="mb-6 flex items-center gap-2 font-semibold text-foreground">
+                      <span
+                        className="material-symbols-outlined text-primary"
+                        style={{ fontVariationSettings: '"FILL" 1' }}
+                      >
+                        analytics
+                      </span>
+                      Test Summary
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between rounded-xl bg-background/80 p-3">
+                        <span className="text-sm text-muted-foreground">
+                          Total Questions
+                        </span>
+                        <span className="text-lg font-semibold text-primary">
+                          0
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl bg-background/80 p-3">
+                        <span className="text-sm text-muted-foreground">
+                          Total Marks
+                        </span>
+                        <span className="text-lg font-semibold text-foreground">
+                          0
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl bg-background/80 p-3">
+                        <span className="text-sm text-muted-foreground">
+                          Passing Marks
+                        </span>
+                        <span className="text-lg font-semibold text-foreground">
+                          0
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl bg-background/80 p-3">
+                        <span className="text-sm text-muted-foreground">
+                          Duration
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-lg font-semibold text-foreground">
+                            0
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            mins
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 rounded-xl border border-primary/20 bg-primary/10 p-3">
+                      <div className="mb-1 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm text-primary">
+                          info
+                        </span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                          Quick Note
+                        </span>
+                      </div>
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        These values will update automatically as you add
+                        sections and questions in the next steps.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-border bg-card p-6">
+                    <h4 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      Shortcuts
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          Save Progress
+                        </span>
+                        <span className="rounded border border-border bg-secondary/80 px-2 py-1 text-[10px] font-mono text-foreground">
+                          ⌘ S
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          Next Step
+                        </span>
+                        <span className="rounded border border-border bg-secondary/80 px-2 py-1 text-[10px] font-mono text-foreground">
+                          ⌘ Enter
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
           <div className="bg-[#111827] border border-border rounded-xl p-5" data-purpose="preview-panel">
   <div className="flex items-center gap-2 mb-4">
     <svg className="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">

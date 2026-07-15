@@ -15,7 +15,6 @@ import TestSetting from "@/components/CreateTest/TestSetting";
 import TestStructure from "@/components/CreateTest/TestStructure";
 import AddQuestion from "@/components/CreateTest/AddQuestion";
 import TestPublish from "@/components/CreateTest/TestPublish";
-import AddNewQuestion from "@/components/CreateTest/AddNewQuestion";
 
 export default function AppRoutes() {
   return (
@@ -41,7 +40,7 @@ export default function AppRoutes() {
             <Route path={ROUTES.TESTSETTING} element={<TestSetting/>}/>
             <Route path={ROUTES.TESTSTRUCTURE} element={<TestStructure/>}/>
             <Route path={ROUTES.TESTPUBLISH} element={<TestPublish/>}/>
-            <Route path={ROUTES.ADDQUESTION} element={<AddNewQuestion/>}/>
+            <Route path={ROUTES.ADDQUESTION} element={<AddQuestion/>}/>
           </Route>
 
         </Route>

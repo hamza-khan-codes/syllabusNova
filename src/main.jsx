@@ -7,15 +7,18 @@ import { store } from "@/app/store/store";
 import ThemeProvider from "./app/Providers/ThemeProvider";
 import AuthProvider from "./app/Providers/AuthProvider";
 import "katex/dist/katex.min.css";
+import CreateTestProvider from "./app/Providers/CreateTestProvider";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
-      <ThemeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <CreateTestProvider>
+            <App />
+          </CreateTestProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </Provider>
   </StrictMode>,
 );
