@@ -9,9 +9,11 @@ import createTestSchema from "@/schema/createTestSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputInlineError from "../common/InlineError";
 import { useDispatch, useSelector } from "react-redux";
-import { updateInfo } from "@/features/CreateTest/createTestSlices";
+import { completeStep, setCurrentStep, updateInfo } from "@/features/CreateTest/createTestSlices";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constant/routes";
+import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
+import { ArrowLeft, ArrowRight, Eye, FilePenLine, Rocket } from "lucide-react";
 
 export default function BasicInfo() {
   const dispatch = useDispatch();
@@ -66,6 +68,8 @@ export default function BasicInfo() {
 
       localStorage.setItem("createTest", JSON.stringify(updatedCreateTest));
       navigate(ROUTES.TESTSTRUCTURE)
+      dispatch(setCurrentStep(WORKFLOW_CREATETEST_STEPS.steps[1].step))
+      dispatch(completeStep(WORKFLOW_CREATETEST_STEPS.steps[0].step))
     } catch (error) {
       console.error(error);
     }
@@ -76,7 +80,7 @@ export default function BasicInfo() {
     <>
       <Toaster />
       <form
-        id="createTestForm"
+        id="AddInfo"
         onSubmit={handleSubmit(onSubmit)}
         className="w-full"
       >
@@ -213,7 +217,24 @@ export default function BasicInfo() {
             </div>
           </div>
         </section>
+        <div className="h-32" />
       </form>
+      <footer className="fixed  bottom-0 left-0 xl:left-64 right-0 bg-background border-t px-lg py-4 z-40 flex items-center justify-between">
+              <button className="px-6 py-2 rounded-lg border border-muted-foreground hover:border-white text-muted-foreground cursor-pointer hover:text-white transition-colors flex items-center gap-2">
+                Back
+              </button>
+              <div className="flex items-center gap-3">
+
+
+                <button
+                  type="submit"
+                  form="AddInfo"
+                  className="px-8 py-2.5 rounded-lg bg-success  font-bold hover:bg-success/90 cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-success/20 disabled:cursor-not-allowed disabled:scale-none disabled:bg-muted/30 disabled:text-muted-foreground disabled:border-muted-foreground text-primary-foreground  active:scale-95"
+                >
+                  <ArrowRight size={20} className="" />  Next
+                </button>
+              </div>
+            </footer>
     </>
   );
 }

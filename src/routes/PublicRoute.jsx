@@ -9,8 +9,8 @@ export default function PublicRoute() {
 
   if (loading) {
     return (
-      <div className="absolute inset-0">
-        <Loading />
+       <div className="absolute inset-0 bg-background flex justify-center items-center">
+        <Loading className={" w-10 h-10"}/>
       </div>
     );
   }

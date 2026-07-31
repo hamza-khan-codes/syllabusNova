@@ -1,3 +1,5 @@
+import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
+
  const createTestInitialState = {
   info: {
     title: "",
@@ -37,7 +39,17 @@
     name: "",
   },
 
-  questions: [],
+   questions: [],
+   edit: [],
+  
+  workflow: {
+    currentStep: WORKFLOW_CREATETEST_STEPS.steps[0].step,
+    visited: [WORKFLOW_CREATETEST_STEPS.steps[0].step],
+    completed: [],
+    previousStep: null,
+    nextStep: null,
+    stepOrder:WORKFLOW_CREATETEST_STEPS.steps
+  },
 
   loading: false,
   error: null,

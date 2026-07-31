@@ -1,8 +1,20 @@
+import { SIDEBARCONDITIONS } from "@/constant/createTest/sidebarConditions";
+import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+
 export default function TestSummerySidebar() {
+  const location = useLocation()
+  const createTest = useSelector((state) => state.createTest)
+  const currentPath = createTest.workflow.stepOrder.filter((s) => {
+    return s.path === location.pathname
+  })
+  const {publish} = SIDEBARCONDITIONS
+
+  console.log("current Path :",currentPath)
   return (
     <>
-      {/* Right Sidebar (Fixed in desktop context) */}
-      <aside className="w-full md:w-80 space-y-6">
+      {/* Right Sidebar*/}
+      <aside className={`${!publish.sidebar && "hidden"} w-full md:w-80 space-y-6`}>
         <div className=" space-y-6">
           <div className="w-full space-y-6 xl:w-80">
                   <div className="sticky top-24 rounded-2xl border border-primary/30 bg-card p-6 shadow-lg">

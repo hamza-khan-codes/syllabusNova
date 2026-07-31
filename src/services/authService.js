@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../firebase/config";
 import { updateUserProfileController } from "@/controllers/authControllers";
-import { toast } from "sonner";
+
 
 // LOGIN User
 export async function loginUser(email, password) {

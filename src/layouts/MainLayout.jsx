@@ -115,7 +115,7 @@ export default function  MainLayout({ children }) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-20 bg-card border-b flex items-center gap-4 px-4 lg:px-8 sticky top-0 z-10">
+        <header className="h-20 bg-card border-b flex items-center gap-4 px-4 lg:px-8 sticky top-0 z-50">
           <button className="p-2 rounded-md hover:bg-muted text-muted-foreground">
             <svg
               className="size-5"

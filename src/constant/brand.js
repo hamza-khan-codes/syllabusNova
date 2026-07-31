@@ -1,1 +1,1 @@
-export const appName = "SyllabusNova"
+export const appName = "Syllabus"

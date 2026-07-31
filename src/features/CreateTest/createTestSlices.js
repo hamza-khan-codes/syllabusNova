@@ -21,7 +21,14 @@ export const {
     createTestStart,
     createTestSuccess,
     createTestFailure,
-    updateCreateTest
+    updateCreateTest,
+    editQuestion,
+    updateQuestion,
+    clearEditQuestion,
+    setCurrentStep,
+    completeStep,
+    resetWorkflow,
+    changeStepPath
 } = createTestSlice.actions
 
 export default createTestSlice.reducer

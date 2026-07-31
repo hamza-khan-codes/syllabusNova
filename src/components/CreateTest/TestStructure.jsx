@@ -17,10 +17,16 @@ import { Badge } from "../common/ui/Badge";
 import { useDispatch, useSelector } from "react-redux";
 import Toaster from "../ui/sonner";
 import { toast } from "sonner";
-import { updateStructure } from "@/features/CreateTest/createTestSlices";
+import {
+  completeStep,
+  setCurrentStep,
+  updateStructure,
+} from "@/features/CreateTest/createTestSlices";
 import getAddNumbers from "@/utils/getAddNumbers";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constant/routes";
+import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
+import { ArrowRight } from "lucide-react";
 
 export default function TestStructure() {
   const createTest = useSelector((state) => state.createTest);
@@ -60,9 +66,10 @@ export default function TestStructure() {
     control: mainControl,
     name: "negativeMarking",
   });
-  const navigate  = useNavigate()
+  const navigate = useNavigate();
 
   const onSubmit = (data) => {
+    console.log("createTest - TestStructure ::", createTest);
     const { section } = data;
     const isSectionWise = section !== "single";
     if (isSectionWise && sections.length < 2) {
@@ -113,7 +120,9 @@ export default function TestStructure() {
       };
       dispatch(updateStructure(payload));
       localStorage.setItem("createTest", JSON.stringify(updatedCreateTest));
-      navigate();
+      dispatch(setCurrentStep(WORKFLOW_CREATETEST_STEPS.steps[2].step));
+      dispatch(completeStep(WORKFLOW_CREATETEST_STEPS.steps[1].step));
+      navigate(ROUTES.TESTSETTING);
     } else if (!isSectionWise) {
       const {
         marksPerQuestion,
@@ -144,7 +153,10 @@ export default function TestStructure() {
       };
       dispatch(updateStructure(payload));
       localStorage.setItem("createTest", JSON.stringify(updatedCreateTest));
-      navigate(ROUTES.TESTSETTING)
+      console.log("run...");
+      dispatch(setCurrentStep(WORKFLOW_CREATETEST_STEPS.steps[2].step));
+      dispatch(completeStep(WORKFLOW_CREATETEST_STEPS.steps[1].step));
+      navigate(ROUTES.TESTSETTING);
     }
   };
 
@@ -163,6 +175,7 @@ export default function TestStructure() {
       title: secName,
       duration: parseInt(secDuration),
       questions: parseInt(secQuestions),
+      sectionId: crypto.randomUUID(),
     };
 
     setSections((prev) => [...prev, Section]);
@@ -319,7 +332,7 @@ export default function TestStructure() {
         </Dialog>
       )}
 
-      <form onSubmit={handleMainSubmit(onSubmit)} id="createTestForm">
+      <form onSubmit={handleMainSubmit(onSubmit)} id="AddStructure">
         <div className="flex flex-1 overflow-hidden">
           <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-background">
             <div className="mx-auto max-w-6xl">
@@ -679,6 +692,21 @@ export default function TestStructure() {
           </main>
         </div>
       </form>
+      <div className="h-32" />
+      <footer className="fixed px-3 bottom-0 left-0 xl:left-64 right-0 bg-background border-t px-lg py-4 z-40 flex items-center justify-between">
+        <button className="px-6 py-2 rounded-lg border border-muted-foreground hover:border-white text-muted-foreground cursor-pointer hover:text-white transition-colors flex items-center gap-2">
+          Back
+        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            form="AddStructure"
+            className="px-8 py-2.5 rounded-lg bg-success  font-bold hover:bg-success/90 cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-success/20 disabled:cursor-not-allowed disabled:scale-none disabled:bg-muted/30 disabled:text-muted-foreground disabled:border-muted-foreground text-primary-foreground  active:scale-95"
+          >
+            <ArrowRight  size={20} className="" /> Next
+          </button>
+        </div>
+      </footer>
     </div>
   );
 }

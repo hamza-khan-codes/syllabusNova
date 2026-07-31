@@ -11,6 +11,8 @@ export const ROUTES = {
   CREATETEST: "/createtest",
   TESTINFO: "/createtest/test-info",
   ADDQUESTION: "/createtest/add-question",
+  ADDNEWQUESTION: "/createtest/add-new-question",
+  ADDNEWQUESTIONLIST: "/createtest/add-new-question-list",
   TESTSETTING: "/createtest/test-setting",
   TESTSTRUCTURE: "/createtest/test-structure",
   TESTPUBLISH:"/createtest/test-publish",

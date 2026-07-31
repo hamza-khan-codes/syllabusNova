@@ -119,7 +119,7 @@
 
   /* Status */
   --success: oklch(0.7 0.18 155);
-  --success-forground:oklch(0.2 0.02 155);
+  --success-forground: oklch(0.2 0.02 155);
   --warning: oklch(0.84 0.17 82);
   --info: oklch(0.7 0.14 240);
 
@@ -175,7 +175,7 @@
   --sidebar-ring: var(--primary);
 
   --success: oklch(0.7 0.18 155);
-  --success-forground:oklch(0.2 0.02 155);
+  --success-forground: oklch(0.2 0.02 155);
   --warning: oklch(0.82 0.18 82);
   --info: oklch(0.72 0.14 240);
 
@@ -184,25 +184,43 @@
   --chart-3: oklch(0.82 0.18 75);
   --chart-4: oklch(0.68 0.18 340);
   --chart-5: oklch(0.62 0.16 25);
+
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-base: 4px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  --container-max: 1440px;
+  --text-body-sm: 14px;
+  --text-body-md: 16px;
+  --text-body-lg: 18px;
+
+  --text-headline-md: 24px;
+  --text-headline-lg: 36px;
+
+  --text-display-xl: 60px;
+
+  --leading-body-sm: 20px;
+  --leading-body-md: 24px;
+  --leading-body-lg: 28px;
+
+  --leading-headline-lg: 44px;
+
+  --tracking-headline-lg: -0.02em;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 }
 
 /* ===========================
    Base
 =========================== */
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
-  html {
-    @apply font-sans scroll-smooth;
-  }
-
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-  }
-}
 
 .bg-mesh {
   background-color: #6d4aff;
@@ -235,3 +253,21 @@ input:-webkit-autofill:focus {
   -webkit-text-fill-color: white;
   transition: background-color 9999s ease-in-out 0s;
 }
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid #f2f4f7;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+      .btn-primary {
+        background-color: var(--accent);
+        color: var(--accent-foreground);
+        border-radius: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }

@@ -78,3 +78,10 @@ export const SECTION_VALIDATION = {
     MAX_MSG: "Duration cannot exceed 300 minutes.",
   },
 };
+
+
+export const ADD_NEW_QUESTION = {
+  QUESTION: {
+    MAX_OPTIONS:4
+  }
+}

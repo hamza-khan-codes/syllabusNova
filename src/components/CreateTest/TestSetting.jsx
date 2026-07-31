@@ -1,12 +1,18 @@
 import { ROUTES } from "@/constant/routes";
-import { updateSettings } from "@/features/CreateTest/createTestSlices";
+import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
+import {
+  completeStep,
+  setCurrentStep,
+  updateSettings,
+} from "@/features/CreateTest/createTestSlices";
+import { ArrowRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 export default function TestSetting() {
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const createTest = useSelector((state) => state.createTest);
   const { register, handleSubmit } = useForm({
     defaultValues: {
@@ -29,11 +35,13 @@ export default function TestSetting() {
     };
     dispatch(updateSettings(payload));
     localStorage.setItem("createTest", JSON.stringify(updatedCreateTest));
+    dispatch(setCurrentStep(WORKFLOW_CREATETEST_STEPS.steps[3].step));
+    dispatch(completeStep(WORKFLOW_CREATETEST_STEPS.steps[2].step));
     navigate(ROUTES.ADDQUESTION);
   };
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} id="createTestForm">
+      <form onSubmit={handleSubmit(onSubmit)} id="AddSettings">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Allow Review */}
           <div className="bg-muted p-6 rounded-3xl border border-outline-variant flex flex-col justify-between">
@@ -151,6 +159,20 @@ export default function TestSetting() {
           </div>
         </div>
       </form>
+      <footer className="fixed  bottom-0 left-0 xl:left-64 right-0 bg-background border-t px-lg py-4 z-40 flex items-center justify-between">
+        <button className="px-6 py-2 rounded-lg border border-muted-foreground hover:border-white text-muted-foreground cursor-pointer hover:text-white transition-colors flex items-center gap-2">
+          Back
+        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            form="AddSettings"
+            className="px-8 py-2.5 rounded-lg bg-success  font-bold hover:bg-success/90 cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-success/20 disabled:cursor-not-allowed disabled:scale-none disabled:bg-muted/30 disabled:text-muted-foreground disabled:border-muted-foreground text-primary-foreground  active:scale-95"
+          >
+            <ArrowRight size={20} className="" /> Next
+          </button>
+        </div>
+      </footer>
     </>
   );
 }
