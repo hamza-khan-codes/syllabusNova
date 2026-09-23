@@ -16,65 +16,7 @@ import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
 import { ArrowLeft, ArrowRight, Eye, FilePenLine, Rocket } from "lucide-react";
 
 export default function BasicInfo() {
-  const dispatch = useDispatch();
-  const createTest = useSelector((state) => state.createTest);
-  const examType = [
-    { type: "Formal Examination" },
-    { type: "Weekly Quiz" },
-    { type: "Mock Test" },
-  ];
-  const examLevel = [
-    { type: "Intermediate" },
-    { type: "Beginner" },
-    { type: "Advanced" },
-    { type: "Expert" },
-  ];
-  const { register, handleSubmit, formState } = useForm({
-    resolver: zodResolver(createTestSchema),
-    mode: "onChange",
-  });
-  const { errors } = formState;
-  const [coverPreview, setCoverPreview] = useState(null);
-  const navigate = useNavigate();
 
-  const onSubmit = async (data) => {
-    try {
-      const file = data.cover?.[0];
-      let coverUrl = null;
-
-      if (file) {
-        const toastId = toast.loading("Uploading image...");
-        coverUrl = await imgController(file);
-        toast.success("Image uploaded successfully!", {
-          id: toastId,
-        });
-      }
-      const { title, category, description, difficulty } = data;
-      const payload = {
-        title,
-        category,
-        cover: coverUrl,
-        description,
-        difficulty,
-      };
-      dispatch(updateInfo(payload));
-      const updatedCreateTest = {
-        ...createTest,
-        info: {
-          ...createTest.info,
-          ...payload,
-        },
-      };
-
-      localStorage.setItem("createTest", JSON.stringify(updatedCreateTest));
-      navigate(ROUTES.TESTSTRUCTURE)
-      dispatch(setCurrentStep(WORKFLOW_CREATETEST_STEPS.steps[1].step))
-      dispatch(completeStep(WORKFLOW_CREATETEST_STEPS.steps[0].step))
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  console.log(createTest);
 
   return (
     <>

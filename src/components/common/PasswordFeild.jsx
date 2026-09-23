@@ -12,7 +12,22 @@ export default function PasswordField({ register, errors }) {
           id="Password"
           type={isPasswordVisible.password ? "text" : "password"}
           placeholder=" "
-          className="peer w-full h-14 rounded border bg-surface-container-low px-4 outline-none transition-all focus:ring-2 focus:ring-primary/20"
+          className="
+  peer
+  w-full
+  h-14
+  rounded-lg
+  foer
+  text-foreground
+  border-primary
+  bg-background
+  px-4
+  outline-none
+  transition-all
+  focus:ring-2
+  focus:ring-primary/20
+  focus:border-primary
+"
           {...register("password", {
             required: "Password is required.",
             validate: {
@@ -64,7 +79,7 @@ export default function PasswordField({ register, errors }) {
           aria-label={
             isPasswordVisible.password ? "Hide password" : "Show password"
           }
-          className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-on-surface-variant transition-colors hover:text-primary"
+          className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-on-surface-variant transition-colors text-muted-foreground hover:text-primary"
         >
           <span className="material-symbols-outlined">
             {isPasswordVisible.password ? <Eye /> : <EyeClosed />}

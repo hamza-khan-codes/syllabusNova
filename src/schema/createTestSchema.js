@@ -17,6 +17,10 @@ const createTestSchema = z.object({
     .string()
     .min(1, "Select a category"),
 
+  subject: z
+    .string()
+    .min(1, "Select a subject"),
+
   difficulty: z
     .string()
     .min(1, "Select a difficulty"),
@@ -43,7 +47,8 @@ const createTestSchema = z.object({
       message: "Upload a JPG, JPEG, PNG, or WebP image under 5MB.",
     }
   )
-  .optional(),
+    .optional(),
+  instructions:z.string().optional()
 });
 
 export default createTestSchema;

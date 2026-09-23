@@ -1,74 +1,135 @@
+
 import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
-import { useEffect, useMemo, useState } from "react";
+import { Check } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function StepTreaker() {
-  const createTest = useSelector((state) => state.createTest)
-  const location = useLocation()
-  const navigate = useNavigate()
+  const createTest = useSelector((state) => state.createTest);
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  const { currentStep, completed = [], stepOrder = [] } =
+    createTest.workflow;
+
+  const activeWorkflowStep = stepOrder.find(
+    (step) => step.step === currentStep
+  );
+
+  // Keep URL synced with workflow
   useEffect(() => {
-    const currentPath = location.pathname
-    const currentStep = createTest.workflow.stepOrder?.filter((s) => {
-      return s.step === createTest.workflow.currentStep
-    })[0]
-    console.log("currentStep",currentStep)
-    
-    if (!(currentStep.path === currentPath)) {
-      navigate(currentStep.path, {
-        replace:true
-      })
+    if (!activeWorkflowStep?.path) return;
+
+    if (activeWorkflowStep.path !== location.pathname) {
+      navigate(activeWorkflowStep.path, {
+        replace: true,
+      });
     }
+  }, [activeWorkflowStep?.path, location.pathname, navigate]);
 
-  },[location])
+  const steps = useMemo(() => {
+    return WORKFLOW_CREATETEST_STEPS.steps.map((step, index) => {
+      let status = "pending";
 
+      if (step.step === currentStep) {
+        status = "current";
+      } else if (completed.includes(step.step)) {
+        status = "completed";
+      }
 
-console.log(createTest)
-const steps = useMemo(() => {
-  let steps = [];
-WORKFLOW_CREATETEST_STEPS.steps.forEach((s, index) => {
-    let status = "pending";
-    const step = s.step;
+      return {
+        ...step,
+        number: index + 1,
+        status,
+      };
+    });
+  }, [currentStep, completed]);
 
-    if (step === createTest.workflow.currentStep) {
-      status = "current";
-    } else if (createTest.workflow.completed.includes(step)) {
-      status = "completed";
-    }
-     steps.push({
-      step: index + 1,
-      title: step,
-      status,
-     });
-    
-});
-  localStorage.setItem("createTest", JSON.stringify(createTest));
-  return steps
-}, [
-  createTest.workflow.currentStep,
-  createTest.workflow.completed,
-]);
-  console.log("steps ",steps)
-  console.log(createTest.workflow.completed)
-  
   return (
-    <>
-      {/* Wizard Stepper */}
-      <div className="flex items-center justify-between mb-8  mx-auto px-4">
+    <div className="mb-5 rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
+        {steps.map((step, index) => {
+          const Icon = step.icon;
 
-        {steps.map((step,i) => {
-       return (<div className={"flex capitalize  flex-col items-center gap-2 flex-1 relative "} key={i}>
-          <div className={`${step.status === "pending"? "bg-muted text-muted-foreground":step.status === "current"? "bg-primary text-primary-foreground":"text-primary-foreground bg-success"} w-10 h-10 rounded-full flex items-center justify-center font-bold z-10`}>
-            {step.step}
-          </div>
-          <span className="text-xs font-medium ">
-            {step.title}
-          </span>
-          </div>)
+          const active = step.status === "current";
+          const isCompleted = step.status === "completed";
+
+          return (
+            <div
+              key={step.step}
+              className="relative flex items-start gap-3"
+            >
+              {/* Icon */}
+              <div
+                className={[
+                  "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition-all duration-300",
+                  active
+                    ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                    : isCompleted
+                    ? "border-primary/30 bg-primary/10 text-primary"
+                    : "border-border bg-secondary text-muted-foreground",
+                ].join(" ")}
+              >
+                {isCompleted ? (
+                  <Check size={21} strokeWidth={2.5} />
+                ) : Icon ? (
+                  <Icon size={21} />
+                ) : (
+                  <span className="text-sm font-bold">{step.number}</span>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="min-w-0">
+                <p
+                  className={[
+                    "text-sm font-semibold transition-colors",
+                    active || isCompleted
+                      ? "text-foreground"
+                      : "text-muted-foreground",
+                  ].join(" ")}
+                >
+                  {step.title}
+                </p>
+
+                {step.description && (
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {step.description}
+                  </p>
+                )}
+
+                {/* Step number */}
+                <span
+                  className={[
+                    "mt-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : isCompleted
+                      ? "bg-primary/10 text-primary"
+                      : "bg-secondary text-muted-foreground",
+                  ].join(" ")}
+                >
+                  {step.number}
+                </span>
+              </div>
+
+              {/* Connector */}
+              {index !== steps.length - 1 && (
+                <div
+                  className={[
+                    "absolute left-14.5 -right-5 top-6 hidden border-t border-dashed lg:block",
+                    isCompleted
+                      ? "border-primary/50"
+                      : "border-border",
+                  ].join(" ")}
+                />
+              )}
+            </div>
+          );
         })}
-
       </div>
-    </>
+    </div>
   );
 }
+

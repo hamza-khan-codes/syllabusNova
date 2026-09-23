@@ -28,25 +28,17 @@ import { useSelector } from "react-redux";
 
 const nav = [
   { to: ROUTES.DASHBOARD, label: "Dashboard", icon: LayoutGrid },
-  { to: "/explore", label: "Explore Quizzes", icon: Search },
-  { to: "/my-tests", label: "My Tests", icon: FileText },
-  { to: "/attempted", label: "Attempted Tests", icon: ClipboardList },
+  { to: ROUTES.EXPLOREQUIZ, label: "Explore Quizzes", icon: Search },
+  { to: ROUTES.MYTESTS, label: "My Tests", icon: FileText },
+  { to: ROUTES.ATTEMPTEDTESTS, label: "Attempted Tests", icon: ClipboardList },
   { to: ROUTES.CREATETEST, label: "Create Test", icon: PlusCircle },
-  { to: "/questions", label: "My Questions", icon: HelpCircle },
+  { to: ROUTES.MYQUESTIONS, label: "My Questions", icon: HelpCircle },
   { to: "/bookmarks", label: "Bookmarks", icon: Bookmark },
-  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { to: "/teams", label: "Teams", icon: Users },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  {
-    to: "/messages",
-    label: "Messages",
-    icon: MessageSquare,
-    badge: "New",
-  },
+
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
-export default function  MainLayout({ children }) {
+export default function  MainLayout({ children ,sidebar= true}) {
   const { theme, toggle } = useTheme();
   const {user} = useSelector((state)=>state.auth)
   const email = user?.email
@@ -54,7 +46,7 @@ export default function  MainLayout({ children }) {
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       {/* Sidebar */}
-      <aside className="hidden lg:flex sticky top-0 h-screen w-64 shrink-0 flex-col border-r bg-sidebar border-sidebar-border">
+      {sidebar &&<aside className="hidden lg:flex sticky top-0 h-screen w-64 shrink-0 flex-col border-r bg-sidebar border-sidebar-border">
         <div className="flex items-center gap-2 px-6 h-20 border-b border-sidebar-border">
           <div className="size-9 rounded-lg bg-primary/15 text-primary grid place-items-center">
             <GraduationCap className="size-5" />
@@ -111,7 +103,7 @@ export default function  MainLayout({ children }) {
             </Button>
           </div>
         </div> */}
-      </aside>
+      </aside>}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">

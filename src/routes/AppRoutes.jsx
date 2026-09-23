@@ -18,6 +18,20 @@ import TestPublish from "@/components/CreateTest/TestPublish";
 import AddNewQuestion from "@/components/CreateTest/AddNewQuestion";
 import AddedQuestionList from "@/components/CreateTest/AddedQuestionList";
 import CreateTestInitial from "@/components/CreateTest/CreateTestInitial";
+import ExploreQuiz from "@/pages/Users/ExploreQuiz";
+import ExploreHome from "@/components/Explore Test/ExploreHome";
+import ExploreCardInfo from "@/components/Explore Test/ExploreCardInfo";
+import IndualQluizInterface from "@/components/IndualQuiz/IndualQluizInterface";
+import IndualResult from "@/components/IndualQuiz/IndualResult";
+import MyTests from "@/pages/Users/MyTests";
+import MyQuestions from "@/pages/Users/MyQuestions";
+import SettingsPage from "@/pages/Users/SettingsPage";
+import AttemptedTests from "@/pages/Users/AttemptedTests";
+import CreateTestHome from "@/components/CreateTest/CreateTestHome";
+import CreateTestInfo from "@/components/CreateTest/CreateTestInfo";
+import CreateTestStructure from "@/components/CreateTest/CreateTestStructure";
+import CreateTestSetting from "@/components/CreateTest/CreateTestSetting";
+import IndualReview from "@/components/IndualQuiz/IndualReview";
 
 export default function AppRoutes() {
   return (
@@ -29,6 +43,7 @@ export default function AppRoutes() {
         {/* Public Routes */}
         <Route element={<PublicRoute />}>
           <Route path={ROUTES.LOGIN} element={<Log />} />
+
           <Route path={ROUTES.FORGOTPASSWORD} element={<ForgotPasswoard />} />
           <Route path={ROUTES.REGISTER} element={<RegisPage />} />
           <Route path={ROUTES.VERIFICATION} element={<Verification />} />
@@ -38,17 +53,43 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
 
+          <Route path={ROUTES.MYTESTS} element={<MyTests />} />
+          <Route path={ROUTES.MYQUESTIONS} element={<MyQuestions />} />
+          <Route path={ROUTES.ATTEMPTEDTESTS} element={<AttemptedTests />} />
+          <Route path={ROUTES.SETTINGSPAGE} element={<SettingsPage />} />
+
           <Route path={ROUTES.CREATETEST} element={<CreateTest />}>
-            <Route index element={<CreateTestInitial />} />
-            <Route element={<BasicInfo />} path={ROUTES.TESTINFO} />
-            <Route path={ROUTES.TESTSETTING} element={<TestSetting/>}/>
-            <Route path={ROUTES.TESTSTRUCTURE} element={<TestStructure/>}/>
-            <Route path={ROUTES.TESTPUBLISH} element={<TestPublish/>}/>
-            <Route path={ROUTES.ADDQUESTION} element={<AddQuestion/>}/>
-            <Route path={ROUTES.ADDNEWQUESTION} element={<AddNewQuestion/>}/>
-            <Route path={ROUTES.ADDNEWQUESTIONLIST} element={<AddedQuestionList/>}/>
+            <Route index element={<CreateTestHome />} />
+            <Route element={<CreateTestInfo />} path={ROUTES.TESTINFO} />
+            <Route path={ROUTES.TESTSETTING} element={<CreateTestSetting />} />
+            <Route
+              path={ROUTES.TESTSTRUCTURE}
+              element={<CreateTestStructure />}
+            />
+            <Route path={ROUTES.TESTPUBLISH} element={<TestPublish />} />
+            <Route path={ROUTES.ADDQUESTION} element={<AddQuestion />} />
+            <Route path={ROUTES.ADDNEWQUESTION} element={<AddNewQuestion />} />
+            <Route
+              path={ROUTES.ADDNEWQUESTIONLIST}
+              element={<AddedQuestionList />}
+            />
           </Route>
 
+          <Route path={ROUTES.EXPLOREQUIZ} element={<ExploreQuiz />}>
+            <Route index element={<ExploreHome />} />
+            <Route
+              path={ROUTES.EXPLORECARDINFO + "/:quizCardId"}
+              element={<ExploreCardInfo />}
+            />
+          </Route>
+
+          <Route
+            path={ROUTES.QUIZINTERFACE + "/:quizId"}
+            element={<IndualQluizInterface />}
+          />
+
+          <Route path={ROUTES.RESULT + "/:quizId"} element={<IndualResult />} />
+          <Route path={ROUTES.REVIEWQUESTIONS + "/:quizId/:reviewQuizId"} element={<IndualReview/>} />
         </Route>
 
         {/* Not found - Universal router */}

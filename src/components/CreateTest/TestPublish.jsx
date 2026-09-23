@@ -1,35 +1,33 @@
 import {
   ArrowLeft,
-  ArrowLeftRight,
   BadgeMinus,
   Calculator,
-  CheckCircle,
   CheckCircle2,
-  CircleMinus,
   CirclePercent,
-  CircleQuestionMark,
   ClipboardCheck,
   Clock,
   Eye,
-  FilePenLine,
   FolderOpen,
-  HandHelping,
   Info,
   LayoutPanelTop,
   Rocket,
-  RocketIcon,
   Shield,
   Shuffle,
   Sparkles,
-  Star,
+  Users,
+  CircleHelp,
 } from "lucide-react";
+
+import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Badge } from "../common/ui/Badge";
 import { useForm } from "react-hook-form";
-import PublishTestPopPop from "./PublishTestPopPop";
+import { useNavigate } from "react-router-dom";
+
+import { Badge } from "../common/ui/Badge";
+import { Dialog, DialogContent } from "../ui/dialog";
+
 import {
   resetCreateTest,
-  updateCreateTest,
   updatePublish,
 } from "@/features/CreateTest/createTestSlices";
 
@@ -37,661 +35,1114 @@ import {
   addTestController,
   setQuestionsController,
 } from "@/controllers/Create Test/createTestControllers";
-import { Dialog } from "../ui/dialog";
-import { DialogContent } from "../ui/dialog";
-import { useEffect, useState } from "react";
+
 import { PUBLIC_APPROVAL_STEPS } from "@/constant/createTest/progressLoadingMsgs";
-import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constant/routes";
+
+import PublishTestPopPop from "./PublishTestPopPop";
 
 export default function TestPublish() {
   const [progress, setProgress] = useState(0);
-  const [Loading, setLoading] = useState(false);
-  const [Error, setError] = useState(null);
-  const [Description, setDescription] = useState(PUBLIC_APPROVAL_STEPS);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [description, setDescription] = useState(
+    PUBLIC_APPROVAL_STEPS?.[0] || "Preparing your test..."
+  );
+
   const createTest = useSelector((state) => state.createTest);
-  const navigate = useNavigate()
   const auth = useSelector((state) => state.auth);
+
   const dispatch = useDispatch();
-  const { register, handleSubmit } = useForm({
+  const navigate = useNavigate();
+
+  const { register, handleSubmit, watch } = useForm({
     defaultValues: {
-      visibility: "public",
+      visibility: createTest?.publish?.visibility || "private",
     },
   });
-  const { structure } = createTest;
-  const { settings } = createTest;
-  const { publish } = createTest;
-  console.log(createTest);
-  const VALIDATION_CHECKLIST = [
-    {
-      id: "title",
-      label: "Test title",
-      completed: true,
-    },
-    {
-      id: "description",
-      label: "Description",
-      completed: true,
-    },
-    {
-      id: "category",
-      label: "Category",
-      completed: true,
-    },
-    {
-      id: "structure",
-      label: "Structure configured",
-      completed: true,
-    },
-    {
-      id: "questions",
-      label: "Questions added",
-      completed: true,
-    },
-    {
-      id: "settings",
-      label: "Settings completed",
-      completed: true,
-    },
-  ];
 
-  const delay = (ms) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
+  const visibility = watch("visibility");
 
-  const onSubmit = async (data) => {
-    setLoading(true);
-    setDescription(PUBLIC_APPROVAL_STEPS[0]);
-    setProgress(16.666666666666668);
+  const {
+    info = {},
+    structure = {},
+    settings = {},
+    questions = [],
+  } = createTest || {};
 
-    const payload = data;
-    await delay(200);
-    setDescription(PUBLIC_APPROVAL_STEPS[1]);
-    setProgress(16.666666666666668 * 2);
+  const sections = structure?.sections || [];
 
-    const updatedCreateTest = {
-      ...createTest,
-      publish: {
-        ...createTest.publish,
-        visibility: payload.visibility,
+  /* =========================================
+     STATISTICS
+  ========================================= */
+
+  const questionCount = questions.length;
+  const totalQuestions = structure?.totalQuestions || 0;
+
+  const questionProgress =
+    totalQuestions > 0
+      ? Math.min((questionCount / totalQuestions) * 100, 100)
+      : 0;
+
+  const sectionCount = sections.length;
+
+  /* =========================================
+     VALIDATION CHECKLIST
+  ========================================= */
+
+  const validationChecklist = useMemo(
+    () => [
+      {
+        id: "title",
+        label: "Test title",
+        description: info?.title || "Title not added",
+        completed: Boolean(info?.title?.trim()),
       },
-      creator: {
-        uid: auth.user.uid,
-        name: auth.user.displayName,
+      {
+        id: "description",
+        label: "Description",
+        description: info?.description
+          ? "Description added"
+          : "Description not added",
+        completed: Boolean(info?.description?.trim()),
       },
-    };
-    console.log("update:", updatedCreateTest);
-    await delay(100);
-    setDescription(PUBLIC_APPROVAL_STEPS[2]);
-    setProgress(16.666666666666668 * 3);
+      {
+        id: "category",
+        label: "Category",
+        description: info?.category || "Category not selected",
+        completed: Boolean(info?.category),
+      },
+      {
+        id: "structure",
+        label: "Structure configured",
+        description: `${totalQuestions} questions · ${
+          structure?.totalMarks || 0
+        } marks`,
+        completed: totalQuestions > 0,
+      },
+      {
+        id: "questions",
+        label: "Questions added",
+        description: `${questionCount} of ${totalQuestions} questions`,
+        completed:
+          totalQuestions > 0 && questionCount >= totalQuestions,
+      },
+      {
+        id: "settings",
+        label: "Settings completed",
+        description: "Test behavior configured",
+        completed: true,
+      },
+    ],
+    [info, structure, totalQuestions, questionCount]
+  );
 
-    dispatch(updatePublish(payload));
-    localStorage.setItem("createTest", JSON.stringify(updatedCreateTest));
-    // Create Firestore object without workflow
-    const {
-      workflow,
-      edit,
-      error,
-      loading,
-      questions,
-      ...saveInFireStoreTests
-    } = updatedCreateTest;
-    const saveInFireStoreQuestions = updatedCreateTest.questions;
+  const completedChecks = validationChecklist.filter(
+    (item) => item.completed
+  ).length;
 
-    console.log("Local Storage:", updatedCreateTest);
-    console.log("Firestore test:", saveInFireStoreTests);
-    console.log("Firestore questions:", saveInFireStoreQuestions);
-    console.log("Auth :", auth);
+  const allValid =
+    completedChecks === validationChecklist.length;
 
-    try {
-      const testRef = await addTestController(saveInFireStoreTests);
+  /* =========================================
+     HELPERS
+  ========================================= */
 
-      await setQuestionsController(testRef.id, saveInFireStoreQuestions);
+  const delay = (ms) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
-      setDescription(PUBLIC_APPROVAL_STEPS[3]);
-      setProgress(16.666666666666668 * 4);
+  const getDifficultyClass = (difficulty) => {
+    switch (difficulty) {
+      case "Easy":
+        return "bg-success/10 text-success border-success/20";
 
-      await delay(200);
-      setDescription(PUBLIC_APPROVAL_STEPS[4]);
-      setProgress(16.666666666666668 * 5);
+      case "Medium":
+        return "bg-warning/10 text-warning border-warning/20";
 
-      await delay(100);
-      setDescription(PUBLIC_APPROVAL_STEPS[5]);
-      setProgress(16.666666666666668 * 6);
-      console.log("All questions saved successfully.");
-      await delay(300);
-      setLoading(false)
-      setProgress(0)
-      localStorage.removeItem("createTest");
-      dispatch(resetCreateTest())
-      navigate(ROUTES.CREATETEST)
-    } catch (error) {
-      console.error(error.code);
-      console.error(error.message);
+      case "Hard":
+        return "bg-destructive/10 text-destructive border-destructive/20";
+
+      default:
+        return "bg-muted text-muted-foreground border-border";
     }
   };
-  const cx = 48;
-  const cy = 48;
-  const r = 44;
-  // circumference = 2πr
-  const circumference = 2 * Math.PI * r;
 
-  const variablecircumference = 276.48 * ((100 - progress) / 100);
+  /* =========================================
+     SUBMIT
+  ========================================= */
+
+  const onSubmit = async (data) => {
+    setError(null);
+    setLoading(true);
+
+    setDescription(
+      PUBLIC_APPROVAL_STEPS?.[0] || "Preparing your test..."
+    );
+
+    setProgress(16.666666666666668);
+
+    try {
+      await delay(200);
+
+      setDescription(
+        PUBLIC_APPROVAL_STEPS?.[1] || "Validating test..."
+      );
+
+      setProgress(33.333333333333336);
+
+      const updatedCreateTest = {
+        ...createTest,
+
+        publish: {
+          ...createTest.publish,
+          visibility: data.visibility,
+        },
+
+        creator: {
+          uid: auth?.user?.uid,
+          name: auth?.user?.displayName,
+        },
+      };
+
+      await delay(100);
+
+      setDescription(
+        PUBLIC_APPROVAL_STEPS?.[2] ||
+          "Preparing questions..."
+      );
+
+      setProgress(50);
+
+      dispatch(updatePublish(data));
+
+      localStorage.setItem(
+        "createTest",
+        JSON.stringify(updatedCreateTest)
+      );
+
+      const {
+        workflow,
+        edit,
+        error: reduxError,
+        loading: reduxLoading,
+        questions: removedQuestions,
+        ...saveInFireStoreTests
+      } = updatedCreateTest;
+
+      const saveInFireStoreQuestions =
+        updatedCreateTest.questions || [];
+
+      const testRef = await addTestController(
+        saveInFireStoreTests
+      );
+
+      await setQuestionsController(
+        testRef.id,
+        saveInFireStoreQuestions
+      );
+
+      setDescription(
+        PUBLIC_APPROVAL_STEPS?.[3] ||
+          "Saving your test..."
+      );
+
+      setProgress(66.66666666666667);
+
+      await delay(200);
+
+      setDescription(
+        PUBLIC_APPROVAL_STEPS?.[4] ||
+          "Finalizing publication..."
+      );
+
+      setProgress(83.33333333333334);
+
+      await delay(100);
+
+      setDescription(
+        PUBLIC_APPROVAL_STEPS?.[5] ||
+          "Test published successfully!"
+      );
+
+      setProgress(100);
+
+      await delay(500);
+
+      // localStorage.removeItem("createTest");
+
+      dispatch(resetCreateTest());
+
+      setLoading(false);
+      setProgress(0);
+
+      navigate(ROUTES.CREATETEST);
+    }
+    catch (err) {
+      console.error(err);
+
+      setLoading(false);
+      setProgress(0);
+
+      setError(
+        err?.message ||
+          "Something went wrong while publishing the test."
+      );
+    }
+
+  };
 
   return (
     <>
-      <Dialog open={Loading}  onOpenChange={setLoading}>
-        <DialogContent 
-          className={`flex justify-center p-6 max-w-[90%] sm:max-w-[50%] py-8`}
+      {/* =========================================
+          PAGE
+      ========================================= */}
+
+      <div className="box-border min-h-screen w-full min-w-0 max-w-full overflow-x-hidden bg-background">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="mx-auto box-border w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 lg:px-8"
         >
-          <div className="relative flex flex-col items-center text-center">
-            {/* Circular Progress with Rocket */}
-            <div
-              className="relative w-24 h-24 mb-8"
-              data-purpose="circular-loader"
+          {/* =====================================
+              HEADER
+          ====================================== */}
+
+          <header className="mb-8 min-w-0">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="mb-5 inline-flex max-w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
             >
-              {/* Outer Circle Track */}
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  fill="transparent"
-                  r={r}
-                  stroke="#1e293b"
-                  strokeWidth={6}
-                />
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  fill="transparent"
-                  id="circularProgress"
-                  r={r}
-                  stroke={`${progress === 100 ? "var(--success)" : "var(--primary)"}`}
-                  strokeDasharray={circumference}
-                  strokeDashoffset={variablecircumference}
-                  strokeLinecap="round"
-                  strokeWidth={6}
-                  style={{ transition: "stroke-dashoffset 0.3s ease-in-out" }}
-                />
-              </svg>
-              {/* Rocket Icon */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <RocketIcon
-                  size={30}
-                  className={`${progress === 100 ? "text-success" : "text-primary "} animate-pulse`}
-                />
-              </div>
-            </div>
-            <h2
-              className="text-3xl font-bold mb-3 tracking-tight"
-              id="modalHeading"
-            >
-              {Description?.title}
-            </h2>
-            <p
-              className="text-muted-foreground text-base mb-10"
-              id="modalSubtext"
-            >
-              {Description?.message}
-            </p>
-            {/* Linear Progress Bar */}
-            <div
-              className="w-full max-w-xs mb-4"
-              data-purpose="progress-bar-container"
-            >
-              <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${progress === 100 ? "bg-success" : "bg-primary"} rounded-full  transition-all`}
-                  id="linearProgressBar"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <p
-                className={`${progress === 100 ? "text-success" : "text-primary"} font-bold text-xl mt-4`}
-              >
-                {Math.floor(progress)}%
-              </p>
-            </div>
-            {/* Status Hint */}
-            <div className="flex items-center gap-2 text-muted text-sm mt-4">
-              <Sparkles
-                size={15}
-                className={`${progress === 100 ? "text-success" : "text-primary"}   fill-primary animate-pulse`}
-              />
-              <span className="text-muted-foreground ">
-                This may take a few seconds
-              </span>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-      {/* <PublishTestPopPop/> */}
-      <main className="flex-1 overflow-y-auto  bg-background">
-        <div className="max-w-300 mx-auto">
-          {/* Header */}
-          <header className="mb-3 flex justify-between items-end">
-            <div>
-              <h1 className="text-3xl font-medium text-foreground">
-                Publish Test
-              </h1>
-              <p className=" text-muted-foreground mt-xs text-xs">
-                Review your test details before publishing
-              </p>
-            </div>
-          </header>
-          <div className="grid  gap-4">
-            {/*  Summary & Settings */}
-            <div className="col-span-12 lg:col-span-8 space-y-4">
-              {/* test summary card */}
-              <div className="col-span-12 bg-card lg:col-span-7 card-bg rounded-xl p-6 border border-gray-800">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-14 h-14 bg-indigo-600/20 rounded-xl flex items-center justify-center text-indigo-400">
-                    {createTest.info.cover ? (
-                      <img
-                        src={createTest.info.cover}
-                        alt=""
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <svg
-                        className="w-8 h-8"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                      </svg>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground-foreground uppercase font-bold tracking-wider mb-1">
-                      Test Summary
-                    </p>
-                    <h2 className="text-xl font-bold">
-                      {createTest.info.title}
-                    </h2>
-                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                      {createTest.info.description}
-                    </p>
-                  </div>
+              <ArrowLeft className="size-4 shrink-0" />
+              <span>Back</span>
+            </button>
+
+            <div className="flex min-w-0 max-w-full flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="min-w-0 flex-1">
+                <div className="mb-3 flex min-w-0 flex-wrap items-center gap-2">
+                  <Badge className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    Final Step
+                  </Badge>
+
+                  <span className="min-w-0 break-words text-sm text-muted-foreground">
+                    Publish Test
+                  </span>
                 </div>
+
+                <h1 className="break-words text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                  Review & publish
+                </h1>
+
+                <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-muted-foreground sm:text-base">
+                  Review your test details, questions, and settings
+                  before publishing it.
+                </p>
               </div>
 
-              {/* Structure test */}
-              <div className="col-span-12 bg-card lg:col-span-3  border border-border rounded-xl p-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground-foreground mb-6">
-                  Structure Summary
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <Clock size={20} className="text-success" />
-                      Duration
-                    </div>
-                    <span className="text-sm font-medium">
-                      {structure.duration} mins
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <CircleQuestionMark size={20} className="text-primary" />
-                      Total Questions
-                    </div>
-                    <span className="text-sm font-medium">
-                      {structure.totalQuestions}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <Star size={20} className="text-warning" />
-                      Total Marks
-                    </div>
-                    <span className="text-sm font-medium">
-                      {structure.totalMarks}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <CirclePercent size={20} className="text-success" />
-                      Passing Percentage
-                    </div>
-                    <span className="text-sm font-medium text-success">
-                      {structure.passingPercentage}%
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <CircleMinus size={20} className="text-destructive" />
-                      Negative Marking
-                    </div>
-                    {structure.negativeMarking ? (
-                      <span className="text-sm text-success font-medium ">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="text-sm text-destructive font-medium ">
-                        No
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between border-b border-border pb-4">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <BadgeMinus size={20} className="text-destructive" />
-                      Negative Marks
-                    </div>
-                    <span className="text-sm font-medium text-destructive">
-                      -0.25
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between pt-2">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <LayoutPanelTop size={20} className="text-primary" />
-                      Section Wise
-                    </div>
-                    {structure.isSectionWise ? (
-                      <span className="text-sm text-success font-medium ">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="text-sm text-destructive font-medium ">
-                        No
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <FolderOpen size={20} className="text-primary" />
-                      Sections
-                    </div>
-                    <span className="text-sm font-medium text-primary">
-                      {structure.sections.length}
-                    </span>
-                  </div>
+              <div className="flex w-full min-w-0 shrink-0 items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm lg:w-auto">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <ClipboardCheck className="size-5" />
                 </div>
-              </div>
-              {/* Settings Summary */}
-              <div
-                class="col-span-12 lg:col-span-2 bg-card border border-border rounded-xl p-6"
-                data-purpose="settings-summary"
-              >
-                <h3 class="text-sm font-bold uppercase tracking-wider text-muted-foreground-foreground mb-6">
-                  Settings Summary
-                </h3>
-                <div class="space-y-6">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <Shuffle size={20} className="text-primary" />
-                      Shuffle Questions
-                    </div>
-                    {settings.shuffleQuestions ? (
-                      <span className="text-sm text-success font-medium ">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="text-sm text-destructive font-medium ">
-                        No
-                      </span>
-                    )}
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <ArrowLeftRight size={20} className="text-primary" />
-                      Shuffle Options
-                    </div>
-                    {settings.shuffleOptions ? (
-                      <span className="text-sm text-success font-medium ">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="text-sm text-destructive font-medium ">
-                        No
-                      </span>
-                    )}
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <ClipboardCheck size={20} className="text-primary" />
-                      Allow Review
-                    </div>
 
-                    {settings.allowReview ? (
-                      <span className="text-sm text-success font-medium ">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="text-sm text-destructive font-medium ">
-                        No
-                      </span>
-                    )}
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3 text-sm text-muted-foreground-foreground">
-                      <Calculator size={20} className="text-primary" />
-                      Calculator Allowed
-                    </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Completion
+                  </p>
 
-                    {settings.calculatorAllowed ? (
-                      <span className="text-sm text-success font-medium ">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="text-sm text-destructive font-medium ">
-                        No
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {/* Validation Checklist */}
-              <div className="col-span-12 lg:col-span-3 bg-card border border-border rounded-xl p-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground-foreground mb-6">
-                  Validation Checklist
-                </h3>
-                <div className="space-y-4">
-                  {VALIDATION_CHECKLIST.map((c, index) => {
-                    return (
-                      <div
-                        key={c.id}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3 text-sm">
-                          <CheckCircle2 size={20} className="text-success" />
-                          {c.label}
-                        </div>
-                        <Badge
-                          className={` ${c.completed ? "text-success bg-success/10" : "text-warning bg-warning/10"}  text-xs  capitalize `}
-                        >
-                          {c.completed ? "Completed" : "pending"}
-                        </Badge>
-                      </div>
-                    );
-                  })}
-                  <div className="mt-6 p-4 bg-success/10 border border-success/20 rounded-lg flex gap-3">
-                    <CheckCircle size={25} className="text-success" />
-                    <div>
-                      <p className="text-sm font-bold text-success">
-                        Ready to Publish
-                      </p>
-                      <p className="text-xs text-muted-foreground-foreground">
-                        All required information is complete.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Approval Info */}
-              <div className="col-span-12 bg-card lg:col-span-4  border border-border rounded-xl p-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground-foreground mb-6">
-                  Approval Information
-                </h3>
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground-foreground">
-                      Approval Status
-                    </span>
-                    <Badge
-                      className={`${publish.approvalStatus === "pending" ? "bg-warning/20 text-warning" : "bg-success/20 text-success"} px-2 py-0.5 rounded-full  text-xs font-bold  capitalize tracking-tight`}
-                    >
-                      {publish.approvalStatus}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground-foreground">
-                      Approved By
-                    </span>
-                    <span className="text-sm font-medium">
-                      {!publish.aapprovedBy ? "—" : publish.aapprovedBy}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground-foreground">
-                      Approved At
-                    </span>
-                    <span className="text-sm font-medium">
-                      {!publish.aapprovedAt ? "—" : publish.aapprovedAt}
-                    </span>
-                  </div>
-                </div>
-                <div className="bg-indigo-950/30 border border-indigo-900/50 rounded-lg p-4 flex gap-3">
-                  <Info size={25} className="text-primary" />
-                  <p className="text-xs text-muted-foreground-foreground leading-relaxed">
-                    This test will be reviewed by admin before it becomes
-                    available to others.
+                  <p className="break-words text-sm font-semibold text-foreground">
+                    {completedChecks}/{validationChecklist.length}{" "}
+                    checks passed
                   </p>
                 </div>
               </div>
-              {/* Publishing options */}
-              <div
-                className="col-span-12 lg:col-span-4 bg-card border border-border rounded-xl p-6"
-                data-purpose="publishing-options"
-              >
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">
-                  Publishing Options
-                </h3>
-                <form
-                  className="space-y-6"
-                  id="PublichTest"
-                  onSubmit={handleSubmit(onSubmit)}
-                >
-                  <div>
-                    <label className="text-sm font-bold block mb-1">
-                      Visibility
-                    </label>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      Choose who can access this test.
-                    </p>
-                    <div className="space-y-3">
-                      <label className="flex items-center gap-3 p-3 rounded-lg border border-accent bg-primary/5 justify-between cursor-pointer">
-                        <div className="flex items-center gap-2">
-                          <input
-                            className="sr-only peer"
-                            name="visibility"
-                            type="radio"
-                            value={"Private"}
-                            {...register("visibility", {
-                              required: true,
-                            })}
-                          />
+            </div>
+          </header>
 
-                          <div
-                            className="
-      w-4 h-4 rounded-full border border-primary
-      flex items-center justify-center
-      after:content-['']
-      after:w-2 after:h-2
-      after:rounded-full
-      after:bg-primary
-      after:scale-0
-      after:transition-transform
-      peer-checked:after:scale-100
-    "
-                          />
-                          <div>
-                            <p className="text-sm font-medium">Private</p>
-                            <p className="text-[10px] text-muted-foreground">
-                              Only you and admins can access
-                            </p>
-                          </div>
-                        </div>
-                        <Shield
-                          size={20}
-                          className="text-primary fill-primary"
-                        />
-                      </label>
-                      <label className="flex items-center gap-3 p-3 rounded-lg border border-accent bg-primary/5 justify-between cursor-pointer">
-                        <div className="flex items-center gap-2">
-                          <input
-                            className="sr-only peer"
-                            name="visibility"
-                            type="radio"
-                            value={"public"}
-                            {...register("visibility")}
-                          />
-                          <div
-                            className="
-      w-4 h-4 rounded-full border border-primary
-      flex items-center justify-center
-      after:content-['']
-      after:w-2 after:h-2
-      after:rounded-full
-      after:bg-primary
-      after:scale-0
-      after:transition-transform
-      peer-checked:after:scale-100
-    "
-                          />
-                          <div>
-                            <p className="text-sm font-medium">Public</p>
-                            <p className="text-[10px] text-muted-foreground">
-                              Anyone can access this test
-                            </p>
-                          </div>
-                        </div>
-                        <Eye size={20} className="text-primary" />
-                      </label>
+          {/* =====================================
+              TEST HERO
+          ====================================== */}
+
+          <section className="mb-6 min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <div className="grid min-w-0 lg:grid-cols-[280px_minmax(0,1fr)]">
+              {/* Cover */}
+
+              <div className="relative min-h-48 min-w-0 overflow-hidden bg-muted lg:min-h-full">
+                {info?.cover ? (
+                  <img
+                    src={info.cover}
+                    alt={info?.title || "Test cover"}
+                    className="absolute inset-0 size-full max-w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex size-full min-h-48 items-center justify-center">
+                    <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-background text-primary shadow-sm">
+                      <FolderOpen className="size-7" />
                     </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-bold block mb-3">
-                      Status
-                    </label>
-                    <div className="inline-flex text-primary px-4 py-1 bg-primary/10 border border-primary/30 rounded  capitalize font-medium text-xs">
-                      {publish.status}
+                )}
+
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+
+                <Badge className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] truncate rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground backdrop-blur">
+                  {info?.category || "Uncategorized"}
+                </Badge>
+              </div>
+
+              {/* Details */}
+
+              <div className="min-w-0 p-5 sm:p-7 lg:p-8">
+                <div className="flex min-w-0 flex-col gap-6">
+                  <div className="min-w-0">
+                    <div className="mb-3 flex min-w-0 flex-wrap gap-2">
+                      {info?.subject && (
+                        <Badge className="max-w-full break-words rounded-md border border-border bg-muted text-muted-foreground">
+                          {info.subject}
+                        </Badge>
+                      )}
+
+                      {info?.difficulty && (
+                        <Badge
+                          className={`max-w-full rounded-md border ${getDifficultyClass(
+                            info.difficulty
+                          )}`}
+                        >
+                          {info.difficulty}
+                        </Badge>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-3 italic">
-                      You can publish this test when you're ready.
+
+                    <h2 className="break-words text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                      {info?.title || "Untitled Test"}
+                    </h2>
+
+                    <p className="mt-3 max-w-3xl break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                      {info?.description ||
+                        "No test description has been provided."}
                     </p>
                   </div>
-                </form>
+
+                  {/* Stats */}
+
+                  <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-4">
+                    <StatCard
+                      icon={CircleHelp}
+                      label="Questions"
+                      value={questionCount}
+                      subValue={`/ ${totalQuestions}`}
+                    />
+
+                    <StatCard
+                      icon={CirclePercent}
+                      label="Total marks"
+                      value={structure?.totalMarks || 0}
+                    />
+
+                    <StatCard
+                      icon={Clock}
+                      label="Duration"
+                      value={`${structure?.duration || 0} min`}
+                    />
+
+                    <StatCard
+                      icon={LayoutPanelTop}
+                      label="Sections"
+                      value={sectionCount}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
+          </section>
+
+          {/* =====================================
+              MAIN GRID
+          ====================================== */}
+
+          <div className="grid min-w-0 max-w-full gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+            {/* =================================
+                LEFT COLUMN
+            ================================== */}
+
+            <div className="min-w-0 space-y-6">
+              {/* Question progress */}
+
+              <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+                <SectionHeader
+                  icon={ClipboardCheck}
+                  title="Question progress"
+                  description="Make sure your test has all required questions."
+                />
+
+                <div className="mt-6 min-w-0">
+                  <div className="mb-2 flex min-w-0 items-center justify-between gap-3 text-sm">
+                    <span className="min-w-0 break-words font-medium text-foreground">
+                      {questionCount} of {totalQuestions} questions
+                    </span>
+
+                    <span className="shrink-0 font-semibold text-primary">
+                      {Math.round(questionProgress)}%
+                    </span>
+                  </div>
+
+                  <div className="h-2 w-full max-w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all duration-500"
+                      style={{
+                        width: `${questionProgress}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Sections */}
+
+                {structure?.isSectionWise &&
+                  sections.length > 0 && (
+                    <div className="mt-6 min-w-0 space-y-3">
+                      {sections.map((section, index) => {
+                        const sectionQuestions =
+                          questions.filter(
+                            (question) =>
+                              question.sectionId ===
+                              section.sectionId
+                          ).length;
+
+                        const percentage =
+                          section.questions > 0
+                            ? Math.min(
+                                (sectionQuestions /
+                                  section.questions) *
+                                  100,
+                                100
+                              )
+                            : 0;
+
+                        return (
+                          <div
+                            key={
+                              section.sectionId || index
+                            }
+                            className="min-w-0 overflow-hidden rounded-xl border border-border bg-muted/40 p-4"
+                          >
+                            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                              <div className="min-w-0">
+                                <p className="break-words text-sm font-semibold text-foreground [overflow-wrap:anywhere]">
+                                  {section.title ||
+                                    `Section ${index + 1}`}
+                                </p>
+
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {sectionQuestions} of{" "}
+                                  {section.questions} questions
+                                </p>
+                              </div>
+
+                              <span className="shrink-0 text-xs font-semibold text-primary">
+                                {Math.round(percentage)}%
+                              </span>
+                            </div>
+
+                            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-background">
+                              <div
+                                className="h-full rounded-full bg-primary"
+                                style={{
+                                  width: `${percentage}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+              </section>
+
+              {/* Test settings */}
+
+              <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+                <SectionHeader
+                  icon={Sparkles}
+                  title="Test settings"
+                  description="These settings control how students experience the test."
+                />
+
+                <div className="mt-6 grid min-w-0 gap-3 sm:grid-cols-2">
+                  <SettingItem
+                    icon={Shuffle}
+                    label="Shuffle questions"
+                    enabled={settings?.shuffleQuestions}
+                  />
+
+                  <SettingItem
+                    icon={Shuffle}
+                    label="Shuffle options"
+                    enabled={settings?.shuffleOptions}
+                  />
+
+                  <SettingItem
+                    icon={Eye}
+                    label="Allow question review"
+                    enabled={settings?.allowReview}
+                  />
+
+                  <SettingItem
+                    icon={Calculator}
+                    label="Calculator allowed"
+                    enabled={settings?.calculatorAllowed}
+                  />
+
+                  <SettingItem
+                    icon={BadgeMinus}
+                    label="Negative marking"
+                    enabled={structure?.negativeMarking}
+                  />
+
+                  <SettingItem
+                    icon={CirclePercent}
+                    label="Passing percentage"
+                    value={`${structure?.passingPercentage || 0}%`}
+                  />
+                </div>
+              </section>
+
+              {/* Instructions */}
+
+              {info?.instructions && (
+                <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+                  <SectionHeader
+                    icon={Info}
+                    title="Instructions"
+                    description="Instructions students will see before starting."
+                  />
+
+                  <div className="mt-5 min-w-0 break-words rounded-xl border border-border bg-muted/40 p-4 text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                    {info.instructions}
+                  </div>
+                </section>
+              )}
+
+              {/* Section breakdown */}
+
+              {sections.length > 0 && (
+                <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+                  <SectionHeader
+                    icon={LayoutPanelTop}
+                    title="Section breakdown"
+                    description="Marks and passing requirements for each section."
+                  />
+
+                  <div className="mt-5 min-w-0 max-w-full overflow-hidden rounded-xl border border-border">
+                    <div className="hidden min-w-0 grid-cols-[minmax(0,1fr)_100px_100px_100px] gap-4 border-b bg-muted/50 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:grid">
+                      <span>Section</span>
+                      <span>Questions</span>
+                      <span>Marks</span>
+                      <span>Passing</span>
+                    </div>
+
+                    <div className="divide-y divide-border">
+                      {sections.map((section, index) => (
+                        <div
+                          key={
+                            section.sectionId || index
+                          }
+                          className="min-w-0 grid gap-3 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_100px_100px_100px] sm:items-center sm:gap-4"
+                        >
+                          <div className="min-w-0">
+                            <p className="break-words text-sm font-semibold text-foreground [overflow-wrap:anywhere]">
+                              {section.title ||
+                                `Section ${index + 1}`}
+                            </p>
+
+                            <p className="text-xs text-muted-foreground sm:hidden">
+                              {section.questions} questions
+                            </p>
+                          </div>
+
+                          <span className="text-sm text-muted-foreground">
+                            <span className="sm:hidden">
+                              Questions:{" "}
+                            </span>
+                            {section.questions}
+                          </span>
+
+                          <span className="text-sm font-medium text-foreground">
+                            <span className="sm:hidden">
+                              Marks:{" "}
+                            </span>
+                            {section.marks}
+                          </span>
+
+                          <span className="text-sm font-medium text-foreground">
+                            <span className="sm:hidden">
+                              Passing:{" "}
+                            </span>
+                            {section.passingMarks}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
+            </div>
+
+            {/* =================================
+                RIGHT COLUMN
+            ================================== */}
+
+            <aside className="min-w-0 space-y-6">
+              {/* Validation */}
+
+              <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-base font-semibold text-foreground">
+                      Final checklist
+                    </h3>
+
+                    <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">
+                      Everything should be ready before publishing.
+                    </p>
+                  </div>
+
+                  {allValid ? (
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
+                      <CheckCircle2 className="size-5" />
+                    </div>
+                  ) : (
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning">
+                      <Info className="size-5" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-5 min-w-0 space-y-3">
+                  {validationChecklist.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex min-w-0 gap-3 rounded-xl border border-border p-3"
+                    >
+                      <div className="mt-0.5 shrink-0">
+                        {item.completed ? (
+                          <CheckCircle2 className="size-5 text-success" />
+                        ) : (
+                          <div className="size-5 rounded-full border-2 border-muted-foreground/30" />
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words text-sm font-medium text-foreground">
+                          {item.label}
+                        </p>
+
+                        <p className="mt-0.5 break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* Visibility */}
+
+              <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+                <SectionHeader
+                  icon={Users}
+                  title="Visibility"
+                  description="Choose who can access your test."
+                />
+
+                <div className="mt-5 min-w-0 space-y-3">
+                  <label
+                    className={`block min-w-0 cursor-pointer rounded-xl border p-4 transition ${
+                      visibility === "public"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:bg-muted/50"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      value="public"
+                      {...register("visibility")}
+                      className="sr-only"
+                    />
+
+                    <div className="flex min-w-0 gap-3">
+                      <div
+                        className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg ${
+                          visibility === "public"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <Users className="size-4" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground">
+                          Public
+                        </p>
+
+                        <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">
+                          Your test can be discovered and attempted
+                          by other students.
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`block min-w-0 cursor-pointer rounded-xl border p-4 transition ${
+                      visibility === "private"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:bg-muted/50"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      value="private"
+                      {...register("visibility")}
+                      className="sr-only"
+                    />
+
+                    <div className="flex min-w-0 gap-3">
+                      <div
+                        className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg ${
+                          visibility === "private"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <Shield className="size-4" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground">
+                          Private
+                        </p>
+
+                        <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">
+                          Keep this test private and control who can
+                          access it.
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </section>
+
+              {/* Publish card */}
+
+              <section className="sticky top-6 min-w-0 overflow-hidden rounded-2xl border border-primary/20 bg-primary/[0.03] p-5 shadow-sm sm:p-6">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                  <Rocket className="size-5" />
+                </div>
+
+                <h3 className="mt-4 break-words text-lg font-bold text-foreground">
+                  Ready to publish?
+                </h3>
+
+                <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">
+                  Once published, your test will be saved and made
+                  available according to your selected visibility.
+                </p>
+
+                {!allValid && (
+                  <div className="mt-4 flex min-w-0 gap-2 rounded-lg border border-warning/20 bg-warning/10 p-3 text-xs leading-5 text-warning">
+                    <Info className="mt-0.5 size-4 shrink-0" />
+
+                    <span className="min-w-0 break-words">
+                      Some checklist items are incomplete. You can
+                      still review them before publishing.
+                    </span>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="mt-5 flex w-full min-w-0 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Rocket className="size-4 shrink-0" />
+
+                  <span>
+                    {loading
+                      ? "Publishing..."
+                      : "Publish Test"}
+                  </span>
+                </button>
+
+                <p className="mt-3 break-words text-center text-[11px] leading-5 text-muted-foreground">
+                  By publishing, you confirm that the test content
+                  is ready for students.
+                </p>
+              </section>
+
+              {/* Error */}
+
+              {error && (
+                <div className="min-w-0 overflow-hidden rounded-xl border border-destructive/20 bg-destructive/10 p-4">
+                  <div className="flex min-w-0 gap-3">
+                    <Info className="size-5 shrink-0 text-destructive" />
+
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-destructive">
+                        Publishing failed
+                      </p>
+
+                      <p className="mt-1 break-words text-xs leading-5 text-destructive/80 [overflow-wrap:anywhere]">
+                        {error}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </aside>
+          </div>
+        </form>
+      </div>
+
+{/* =====================================
+    PUBLISHING PROGRESS DIALOG
+====================================== */}
+
+<Dialog open={loading}>
+  <DialogContent
+    showCloseButton={false}
+    className="box-border w-[calc(100vw-2rem)] max-w-md overflow-hidden rounded-2xl border-border bg-card p-0 shadow-xl"
+  >
+    <div className="min-w-0 p-6 sm:p-7">
+      {/* Header */}
+
+      <div className="flex min-w-0 flex-col items-center text-center">
+        {/* Progress Circle */}
+
+        <div className="relative mb-6 size-24 shrink-0">
+          <svg
+            className="size-full -rotate-90"
+            viewBox="0 0 100 100"
+          >
+            {/* Background circle */}
+
+            <circle
+              cx="50"
+              cy="50"
+              r="44"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="7"
+              className="text-muted"
+            />
+
+            {/* Progress circle */}
+
+            <circle
+              cx="50"
+              cy="50"
+              r="44"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="7"
+              strokeLinecap="round"
+              className="text-primary transition-all duration-500"
+              strokeDasharray="276.48"
+              strokeDashoffset={
+                276.48 * ((100 - progress) / 100)
+              }
+            />
+          </svg>
+
+          {/* Percentage */}
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-xl font-bold text-foreground">
+              {Math.round(progress)}%
+            </span>
           </div>
         </div>
-        <div className="h-32" />
-      </main>
-      <footer className="fixed  bottom-0 left-0 xl:left-64 right-0 bg-background border-t px-lg py-4 z-40 flex items-center justify-between">
-        <button className="px-6 py-2 rounded-lg border border-muted-foreground hover:border-white text-muted-foreground cursor-pointer hover:text-white transition-colors flex items-center gap-2">
-          <ArrowLeft size={20} className="" /> Back
-        </button>
-        <div className="flex items-center gap-3">
-          <button className="px-6 py-2.5 rounded-lg bg-card border border-border text-slate-200 font-medium hover:bg-border transition-colors flex items-center gap-2">
-            <FilePenLine size={20} /> Save Draft
-          </button>
-          <button className="px-6 py-2.5 rounded-lg border border-primary text-primary font-medium hover:bg-primary/5 transition-colors flex items-center gap-2">
-            <Eye size={20} /> Preview Test
-          </button>
-          <button
-            type="submit"
-            form="PublichTest"
-            className="px-8 py-2.5 rounded-lg bg-success  font-bold hover:bg-success/90 cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-success/20 disabled:cursor-not-allowed disabled:scale-none disabled:bg-muted/30 disabled:text-muted-foreground disabled:border-muted-foreground text-primary-foreground"
-          >
-            <Rocket size={20} className="" /> Publish Test
-          </button>
+
+        {/* Title */}
+
+        <h2 className="break-words text-lg font-bold text-foreground">
+          Publishing your test
+        </h2>
+
+        {/* Current description */}
+
+        <p className="mt-2 max-w-sm break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+          {typeof description === "string"
+            ? description
+            : description?.message ||
+              description?.title ||
+              "Preparing your test..."}
+        </p>
+      </div>
+
+      {/* Main Progress Bar */}
+
+      <div className="mt-7 w-full min-w-0">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-500"
+            style={{
+              width: `${Math.min(Math.max(progress, 0), 100)}%`,
+            }}
+          />
         </div>
-      </footer>
+      </div>
+
+      {/* Progress Steps */}
+
+      <div className="mt-6 min-w-0 space-y-3">
+        {PUBLIC_APPROVAL_STEPS?.slice(0, 6).map(
+          (step, index) => {
+            const stepProgress =
+              ((index + 1) / 6) * 100;
+
+            const completed =
+              progress >= stepProgress;
+
+            const stepText =
+              typeof step === "string"
+                ? step
+                : step?.message ||
+                  step?.title ||
+                  `Step ${index + 1}`;
+
+            return (
+              <div
+                key={index}
+                className="flex min-w-0 items-center gap-3"
+              >
+                {/* Status */}
+
+                {completed ? (
+                  <CheckCircle2 className="size-4 shrink-0 text-success" />
+                ) : (
+                  <div className="size-4 shrink-0 rounded-full border-2 border-border" />
+                )}
+
+                {/* Step Text */}
+
+                <span
+                  className={`min-w-0 break-words text-xs leading-5 ${
+                    completed
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {stepText}
+                </span>
+              </div>
+            );
+          }
+        )}
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
     </>
+  );
+}
+
+/* =========================================
+   STAT CARD
+========================================= */
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  subValue,
+}) {
+  return (
+    <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-muted/40 p-4">
+      <div className="flex min-w-0 items-center gap-2">
+        <Icon className="size-4 shrink-0 text-primary" />
+
+        <span className="min-w-0 truncate text-xs font-medium text-muted-foreground">
+          {label}
+        </span>
+      </div>
+
+      <div className="mt-2 flex min-w-0 items-baseline gap-1">
+        <span className="truncate text-lg font-bold text-foreground">
+          {value}
+        </span>
+
+        {subValue && (
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {subValue}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================
+   SECTION HEADER
+========================================= */
+
+function SectionHeader({
+  icon: Icon,
+  title,
+  description,
+}) {
+  return (
+    <div className="flex min-w-0 items-start gap-3">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Icon className="size-5" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <h2 className="break-words text-base font-semibold text-foreground">
+          {title}
+        </h2>
+
+        <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================
+   SETTING ITEM
+========================================= */
+
+function SettingItem({
+  icon: Icon,
+  label,
+  enabled,
+  value,
+}) {
+  const hasValue = value !== undefined;
+
+  return (
+    <div className="flex min-w-0 items-center justify-between gap-3 overflow-hidden rounded-xl border border-border bg-muted/30 p-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground">
+          <Icon className="size-4" />
+        </div>
+
+        <span className="min-w-0 break-words text-sm font-medium text-foreground">
+          {label}
+        </span>
+      </div>
+
+      {hasValue ? (
+        <span className="shrink-0 text-sm font-semibold text-primary">
+          {value}
+        </span>
+      ) : enabled ? (
+        <CheckCircle2 className="size-5 shrink-0 text-success" />
+      ) : (
+        <span className="shrink-0 text-xs font-medium text-muted-foreground">
+          Off
+        </span>
+      )}
+    </div>
   );
 }

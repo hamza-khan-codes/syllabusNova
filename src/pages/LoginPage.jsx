@@ -3,165 +3,216 @@ import InputInlineError from "@/components/common/InlineError";
 import PasswordFeild from "@/components/common/PasswordFeild";
 import SubmitBtn from "@/components/common/SubmitBtn";
 import AuthLayout from "@/layouts/AuthLayout";
+
 import { GraduationCap } from "lucide-react";
 import { loginUserController } from "@/controllers/authControllers";
 import Toaster from "@/components/ui/sonner";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constant/routes";
 import { toast } from "sonner";
-import { getAuth } from "firebase/auth/web-extension";
 import getFirebaseAuthError from "@/utils/getFirebaseAuthError";
 import Google from "@/assets/Google";
 
-
 export default function LoginPage() {
-  const { register, handleSubmit, formState, setError,reset } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState,
+    reset,
+  } = useForm({
     mode: "onBlur",
   });
+
   const { errors, isSubmitting } = formState;
-  const navigate = useNavigate()
 
   const onSubmit = async (data) => {
     try {
       console.log("Data :", data);
-      const { email, password } = data
-      await loginUserController(email, password)
+
+      const { email, password } = data;
+
+      await loginUserController(email, password);
+
       reset();
     } catch (error) {
-      console.log("loginComponent ", error);
-      toast.error(getFirebaseAuthError(error.message))
+      console.log("loginComponent:", error);
+
+      toast.error(getFirebaseAuthError(error.message));
     }
   };
 
   const forgotHandle = () => {
-    console.log("forgot")
-  }
+    console.log("forgot");
+  };
+
   return (
     <AuthLayout>
-      <Toaster/>
-      <div className="flex flex-col @max-3xl:h-screen items-center justify-center px-6 py-8 md:px-0 mx-auto  lg:py-0">
-        <div
-          className="w-full bg-card text-card-foreground my-10 rounded-2xl shadow dark:border  
-      sm:max-w-lg xl:p-0 "
-        >
-          <div className="p-6 space-y-4 md:space-y-6 sm:p-8 ">
-            <div className="text-center flex flex-col items-center justify-center gap-">
-              <span className="p-2.5 mb-4 bg-primary flex justify-center items-center rounded-lg">
-                <GraduationCap size={"30"}  className=" text-primary-foreground"/>
-              </span>
-              <h1 className="text-xl font-extrabold leading-tight tracking-tight text-card-foreground md:text-3xl ">
-                Login to Syllabus
-              </h1>
-              <p className="text-lg">Access your premium education partner</p>
-            </div>
-            <form
-              className="space-y-4 md:space-y-6 "
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              {/* Email */}
-              {/* Email */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block mb-2 text-sm font-medium text-gray-900 "
-                >
-                  Email
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-6.5 -translate-y-1/2 text-outline text-[20px]">
-                    mail
-                  </span>
-                  <input
-                    className="w-full pl-10 pr-12 py-3 bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-1 font-body-md text-body-md text-on-surface"
-                    id="email"
-                    placeholder="example.@example.com"
-                    type="email"
-                    name="email"
-                    {...register("email", {
-                      required: "Email is required.",
-                      pattern: {
-                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                        message: "Invalid email address",
-                      },
-                    })}
+      <Toaster />
+
+      <div className="flex min-h-screen items-center justify-center px-6 py-8">
+        <div className="w-full max-w-lg">
+
+          {/* Login Card */}
+          <div className="my-8 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+
+            <div className="space-y-7 p-6 sm:p-8">
+
+              {/* ================= HEADER ================= */}
+              <div className="flex flex-col items-center text-center">
+
+                {/* Logo */}
+                <span className="mb-4 flex items-center justify-center rounded-xl bg-primary p-3">
+                  <GraduationCap
+                    size={30}
+                    strokeWidth={2}
+                    className="text-primary-foreground"
                   />
-                  <div className="error h-6 flex items-center">
+                </span>
+
+                {/* Title */}
+                <h1 className="text-2xl font-bold tracking-tight text-card-foreground sm:text-3xl">
+                  Welcome backh
+                </h1>
+
+                {/* Description */}
+                <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
+                  Enter your credentials to access your Syllabus account.
+                </p>
+              </div>
+
+              {/* ================= FORM ================= */}
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="space-y-5"
+              >
+
+                {/* ================= EMAIL ================= */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-medium text-foreground"
+                  >
+                    Email
+                  </label>
+
+                  <div className="relative">
+
+                    {/* Email Icon */}
+                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[20px] text-muted-foreground">
+                      mail
+                    </span>
+
+                    <input
+                      id="email"
+                      type="email"
+                      placeholder="example@example.com"
+                      autoComplete="email"
+                      className="input pl-10"
+                      {...register("email", {
+                        required: "Email is required.",
+                        pattern: {
+                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                          message: "Invalid email address",
+                        },
+                      })}
+                    />
+                  </div>
+
+                  {/* Email Error */}
+                  <div className="flex min-h-6 items-center pt-1">
                     {errors.email && (
-                      <InputInlineError ErrorMsg={errors.email.message} />
+                      <InputInlineError
+                        ErrorMsg={errors.email.message}
+                      />
                     )}
+
                     {errors.email?.type === "available" && (
-                      <span
-                        className="text-sm font-bold cursor-pointer text-blue-900 underline ml-1"
-                        // onClick={() => /*navigate("/registration")*/}
-                      >
+                      <span className="ml-1 cursor-pointer text-sm font-bold text-primary underline">
                         Go to register
                       </span>
                     )}
                   </div>
-                  <button
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors"
-                    type="button"
-                  >
-                    <span className="material-symbols-outlined text-[20px]"></span>
-                  </button>
                 </div>
-              </div>
-              {/* Password */}
-              <PasswordFeild errors={errors} register={register} />
-              <div className="flex items-center justify-between">
-                <div className="flex items-start">
-                  <div className="flex items-center h-5">
+
+                {/* ================= PASSWORD ================= */}
+                <PasswordFeild
+                  errors={errors}
+                  register={register}
+                />
+
+                {/* ================= REMEMBER / FORGOT ================= */}
+                <div className="flex items-center justify-between gap-4">
+
+                  {/* Remember */}
+                  <label
+                    htmlFor="remember"
+                    className="flex cursor-pointer items-center gap-2"
+                  >
                     <input
                       id="remember"
-                      aria-describedby="remember"
                       type="checkbox"
-                      className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                      name="rememberMeBtn"
+                      className="h-4 w-4 cursor-pointer rounded border border-input bg-background accent-primary focus:ring-2 focus:ring-ring"
                       {...register("rememberMe")}
                     />
-                  </div>
-                  <div className="ml-3 text-sm">
-                    <label
-                      htmlFor="remember"
-                      className="text-card-foreground font-medium cursor-pointer text-sm"
-                    >
-                      Remember me
-                    </label>
-                  </div>
-                </div>
-                <button
-                  onClick={forgotHandle}
-                  className="text-sm  font-medium text-primary-600 hover:underline dark:text-primary-500"
-                >
-                  Forgot password?
-                </button>
-              </div>
-              <SubmitBtn isSubmitting={isSubmitting} type="Logining" />
 
-              <div className="relative flex items-center py-4">
-                <div className="grow border-t"></div>
-                <span className="shrink-0 mx-4 font-label-sm text-md uppercase tracking-wider">
-                  Or continue with
-                </span>
-                <div className="grow border-t"></div>
-              </div>
-              <button
-                type="button"
-                className="w-full flex items-center justify-center gap-3 active:scale-95 transition-all cursor-pointer focus:ring-2 focus:ring-primary-300 font-medium rounded-lg text-lg px-5 py-3 outline-1"
-              >
-                <Google/>
-                <span>Sign in with Google</span>
-              </button>
-              <p className="text-md text-center  text-on-background ">
-                Don’t have an account yet?{" "}
-                <a
-                  href="/registration"
-                  className="font-bold  text-primary active:underline "
+                    <span className="text-sm font-medium text-foreground">
+                      Remember me
+                    </span>
+                  </label>
+
+                  {/* Forgot */}
+                  <button
+                    type="button"
+                    onClick={forgotHandle}
+                    className="text-sm font-medium text-primary transition-colors hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
+                {/* ================= LOGIN BUTTON ================= */}
+                <SubmitBtn
+                  isSubmitting={isSubmitting}
+                  type="Logining"
+                />
+
+                {/* ================= DIVIDER ================= */}
+                <div className="relative flex items-center py-2">
+
+                  <div className="grow border-t border-border" />
+
+                  <span className="mx-4 shrink-0 bg-card px-1 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                    Or continue with
+                  </span>
+
+                  <div className="grow border-t border-border" />
+
+                </div>
+
+                {/* ================= GOOGLE ================= */}
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background px-5 py-3 text-base font-medium text-foreground transition-all hover:bg-muted active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring"
                 >
-                  Register
-                </a>
-              </p>
-            </form>
+                  <Google />
+
+                  <span>
+                    Sign in with Google
+                  </span>
+                </button>
+
+                {/* ================= REGISTER ================= */}
+                <p className="text-center text-sm text-muted-foreground">
+                  Don’t have an account yet?{" "}
+
+                  <a
+                    href="/registration"
+                    className="font-bold text-primary transition-colors hover:underline"
+                  >
+                    Register
+                  </a>
+                </p>
+
+              </form>
+            </div>
           </div>
         </div>
       </div>

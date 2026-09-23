@@ -17,11 +17,9 @@ export default function CreateTestLayout({ children }) {
     <>
       <Toaster/>
       <MainLayout>
-        <StepTreaker />
         {/* Main Content Area */}
         <main className=" p-lg flex flex-col md:flex-row gap-8 ">
           <div className="flex-1 space-y-12">{children}</div>
-          <TestSummerySidebar />
         </main>
         <BottomNavigator />
       </MainLayout>

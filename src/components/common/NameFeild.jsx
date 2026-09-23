@@ -9,7 +9,22 @@ export default function NameFeild({ register, errors }) {
           id="name"
           type="text"
           placeholder=""
-          className="peer border w-full h-14 rounded bg-surface-container-low px-4  outline-none transition-all focus:ring-2 focus:ring-primary/20"
+          className="
+  peer
+  w-full
+  h-14
+  rounded-lg
+  foer
+  text-foreground
+  border-primary
+  bg-background
+  px-4
+  outline-none
+  transition-all
+  focus:ring-2
+  focus:ring-primary/20
+  focus:border-primary
+"
           {...register("name", {
             required: "Name is required.",
             validate: {

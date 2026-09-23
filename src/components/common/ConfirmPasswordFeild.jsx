@@ -11,7 +11,22 @@ export default function ConfirmPasswordFeild({ register, errors,getValues }) {
           id="confirmPassword"
           type={isPasswordVisible.confirmPassword ? "text" : "password"}
           placeholder=" "
-          className="peer w-full border h-14 rounded bg-surface-container-low px-4 outline-none transition-all focus:ring-2 focus:ring-primary/20"
+          className="
+  peer
+  w-full
+  h-14
+  rounded-lg
+  foer
+  text-foreground
+  border-primary
+  bg-background
+  px-4
+  outline-none
+  transition-all
+  focus:ring-2
+  focus:ring-primary/20
+  focus:border-primary
+"
           {...register("confirmPassword", {
             required: "Confirm password is required.",
             validate: {
@@ -56,7 +71,7 @@ export default function ConfirmPasswordFeild({ register, errors,getValues }) {
           Confirm Password
         </label>
         <button
-          className="absolute cursor-pointer right-4 top-[56%] -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors"
+          className="absolute cursor-pointer right-4 top-[56%] -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors text-muted-foreground"
           onClick={() => {
             togglePassword("confirmPassword");
           }}

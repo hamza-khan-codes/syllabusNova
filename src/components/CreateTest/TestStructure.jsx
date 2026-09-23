@@ -22,7 +22,6 @@ import {
   setCurrentStep,
   updateStructure,
 } from "@/features/CreateTest/createTestSlices";
-import getAddNumbers from "@/utils/getAddNumbers";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constant/routes";
 import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";

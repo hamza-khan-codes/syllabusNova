@@ -9,6 +9,7 @@ import { ArrowRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import StepTreaker from "./StepTreaker";
 
 export default function TestSetting() {
   const dispatch = useDispatch();
@@ -41,6 +42,7 @@ export default function TestSetting() {
   };
   return (
     <>
+      <StepTreaker/>
       <form onSubmit={handleSubmit(onSubmit)} id="AddSettings">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Allow Review */}

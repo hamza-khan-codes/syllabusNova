@@ -1,6 +1,6 @@
 
 
-export default function getAddNumbers(...numbers) {
+function getAddNumbers(numbers) {
  return numbers.reduce((sum ,num)=> sum + num)
 }
 

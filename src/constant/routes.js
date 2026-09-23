@@ -15,11 +15,26 @@ export const ROUTES = {
   ADDNEWQUESTIONLIST: "/createtest/add-new-question-list",
   TESTSETTING: "/createtest/test-setting",
   TESTSTRUCTURE: "/createtest/test-structure",
-  TESTPUBLISH:"/createtest/test-publish",
+  TESTPUBLISH: "/createtest/test-publish",
+  
+  EXPLOREQUIZ: "/explore",
+  EXPLORECARDINFO: "card-info",
+
+  MYTESTS: "/my-test",
+
+  MYQUESTIONS: "/my-questions",
+  
+  SETTINGSPAGE: "/settings",
+
+  ATTEMPTEDTESTS: "/attempted-tests",
+
+  QUIZINTERFACE:"/quiz",
 
   CATEGORY :"/category",
   PROFILE: "/profile",
-  RESULTS: "/results",
+
+  RESULT: "/results",
+  REVIEWQUESTIONS: "/review",
 
   ADMIN: "/admin",
   ADMIN_USERS: "/admin/users",

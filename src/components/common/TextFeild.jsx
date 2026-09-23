@@ -10,8 +10,23 @@ export default function TextFeild({ purpose ,register ,errors}) {
                     id={string}
                     type="text"
                     placeholder=""
-                    className="peer w-full border h-14 rounded bg-surface-container-low px-4  outline-none transition-all focus:ring-2 focus:ring-primary/20"
-                    {...register("string", {
+                    className="
+  peer
+  w-full
+  h-14
+  rounded-lg
+  foer
+  text-foreground
+  border-primary
+  bg-background
+  px-4
+  outline-none
+  transition-all
+  focus:ring-2
+  focus:ring-primary/20
+  focus:border-primary
+"
+                    {...register(string, {
                       required: "Institude name is required.",
                     })}
                   />

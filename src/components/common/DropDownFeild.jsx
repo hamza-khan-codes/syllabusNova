@@ -6,65 +6,78 @@ export default function DropDownFeild({
   register,
   errors,
   purpose,
-  OPTIONS = {},
+  OPTIONS = [],
 }) {
-  const selectedQualification = watch("string");
-  const string = purpose.replaceAll(" ", "");
+  const fieldName = purpose.replaceAll(" ", "");
+  const selectedValue = watch(fieldName);
+
   return (
     <>
       <div className="relative mt-8">
-        {selectedQualification && (
+        {selectedValue && (
           <label
-            htmlFor={string}
-            className="      
-          
-                text-primary
-                transition-all
-                duration-200
-                pointer-events-none
-                text-xs
-                ml-2
-                "
+            htmlFor={fieldName}
+            className="
+              absolute
+              -top-2
+              left-3
+              z-10
+              bg-background
+              px-1
+              text-xs
+              text-primary
+              pointer-events-none
+            "
           >
-            Last Qulification
+            {purpose}
           </label>
         )}
+
         <select
-          name={string}
-          id={string}
-          className="peer w-full capitalize border h-14 rounded text-muted-foreground pl-2 outline-none transition-all focus:ring-2 focus:ring-primary/20"
-          {...register("string", {
-            required: "Last Qulification is required.",
-          })}
+          id={fieldName}
           defaultValue=""
+          className="
+            w-full
+            h-14
+            rounded-lg
+            border
+            border-border
+            bg-background
+            px-3
+            text-foreground
+            capitalize
+            outline-none
+            transition-all
+            focus:border-primary
+            focus:ring-2
+            focus:ring-primary/20
+          "
+          {...register(fieldName, {
+            required: `${purpose} is required.`,
+          })}
         >
-          <option
-            value=""
-            className="text-muted-foreground capitalize font-semibold bg-muted p-2"
-          >
+          <option value="" disabled>
             Select {purpose}
           </option>
-          {OPTIONS.map((q, i) => {
-            return (
-              <option
-                value={q.value}
-                key={i}
-                className="text-muted-foreground capitalize font-semibold bg-muted "
-              >
-                {q.value}
-              </option>
-            );
-          })}
+
+          {OPTIONS.map((option, index) => (
+            <option
+              value={option.value}
+              key={index}
+              className="capitalize"
+            >
+              {option.value}
+            </option>
+          ))}
         </select>
-        <button
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-          type="button"
-        >
-          <span className="material-symbols-outlined text-[20px]"></span>
-        </button>
       </div>
-      <div className="error h-1 flex items-center">
-        {errors.string && <InputInlineError ErrorMsg={errors.string.message} />}
+
+      <div className="min-h-5 px-1 pt-1">
+        {errors[fieldName] && (
+          <InputInlineError
+            ErrorMsg={errors[fieldName].message}
+          />
+        )}
       </div>
     </>
   );

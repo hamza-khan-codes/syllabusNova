@@ -4,190 +4,535 @@ import EmailFeild from "@/components/common/EmailFeild";
 import PasswordField from "@/components/common/PasswordFeild";
 import SubmitBtn from "@/components/common/SubmitBtn";
 import Toaster from "@/components/ui/sonner";
+
 import { appName } from "@/constant/brand";
 import { ROUTES } from "@/constant/routes";
 import { loginUserController } from "@/controllers/authControllers";
 import getFirebaseAuthError from "@/utils/getFirebaseAuthError";
-import { GraduationCap } from "lucide-react";
+
+import {
+  ArrowRight,
+  CheckCircle2,
+  GraduationCap,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
+
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Log() {
-  const { register, handleSubmit, formState, setError, reset } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState,
+    reset,
+  } = useForm({
     mode: "onChange",
   });
+
   const { errors, isSubmitting } = formState;
-  const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     try {
-      console.log("Data :", data);
+      console.log("Data:", data);
+
       const { email, password } = data;
-        await loginUserController(email, password)
-        reset();
+
+      await loginUserController(email, password);
+
+      reset();
     } catch (error) {
-      console.log("loginComponent ", error);
+      console.log("loginComponent:", error);
+
       toast.error(getFirebaseAuthError(error.message));
     }
   };
 
-
   return (
-      <>
-          <Toaster/>
-      <main className="min-h-screen flex flex-col md:flex-row">
-        {/* Left Side: Login Form */}
-        <section className="w-full md:w-[60%] flex flex-col p-8 md:p-12 lg:p-16 bg-background z-10">
-          {/* Logo Section */}
-          <div className="mb-12">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                <GraduationCap/>
-              </div>
-              <span className="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">
-                {appName}
-              </span>
-            </div>
-          </div>
-          {/* Login Container */}
-          <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-            <div className="mb-8 text-center md:text-left">
-              <h1 className="text-3xl font-bold text-background-forground mb-2">
-                Welcome back
-              </h1>
-              <p className="  text-muted-foreground">
-                Enter your credentials to access your {appName} account.
-              </p>
-            </div>
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-              {/* Email Field */}
-              <EmailFeild register={register} errors={errors} />
-              {/* Password Field */}
-              <PasswordField register={register} errors={errors} />
-              {/* Remember & Forgot */}
-              <div className="flex  flex-col">
-                <Link
-                  className="self-end  text-primary hover:underline transition-all"
-                  to={ROUTES.FORGOTPASSWORD}
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              {/* Submit Button */}
-              <SubmitBtn isSubmitting={isSubmitting} type="Logining" />
-              {/* Divider */}
-              <div className="relative py-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-outline-variant" />
-                </div>
-                <div className="relative flex justify-center text-label-sm">
-                  <span className="px-4 bg-background text-muted-foreground uppercase tracking-wider">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-              {/* Social Buttons */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <button
-                  className="flex items-center text-muted-foreground justify-center gap-3 py-3 border  rounded-full  cursor-pointer text-xl transition-all   text-background-forground"
-                  type="button"
-                >
-                  <Google />
-                  Google
-                </button>
-                <button
-                  className="flex items-center text-muted-foreground justify-center gap-3 py-3 border  rounded-full  cursor-pointer text-xl transition-all   text-background-forground"
-                  type="button"
-                >
-                  <Github />
-                  GitHub
-                </button>
-              </div>
-            </form>
-            {/* Footer */}
-            <div className="mt-12 text-center">
-              <p className=" text-muted-foreground">
-                Don't have an account? {" "}
-                <Link className="text-primary font-bold hover:underline" to={ROUTES.REGISTER}>
-                  Sign up
-                </Link>
-              </p>
-            </div>
-          </div>
-        </section>
-        {/* Right Side: Branded Illustration */}
-        <section className="hidden md:flex md:w-[40%] bg-linear-to-br from-primary via-primary to-[#8E3D00] relative items-center justify-center overflow-hidden p-16">
-          {/* Decorative Patterns */}
-          <div className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage:
-                "radial-gradient( circle at 2px 2px,white 1px,transparent 0)",
-              backgroundSize: "40px 40px",
-            }}
-          />
-          <div className="absolute top-[-10%] right-[-10%] w-125 h-125 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-[-10%] left-[-10%] w-100 h-100 bg-tertiary/20 rounded-full blur-3xl" />
-          <div className="relative z-10 w-full max-w-2xl flex flex-col items-center">
-            {/* Glassmorphism Card */}
-            <div className="glass-card rounded-4xl p-8 md:p-12 w-full mb-12 transform hover:scale-[1.02] transition-transform duration-500">
-              <div className="flex items-start justify-between mb-8">
-                <div className="p-4 bg-white/20 rounded-2xl">
-                  <span className="material-symbols-outlined text-white text-4xl fill-icon">
-                    verified_user
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="h-2 w-24 bg-white/20 rounded-full mb-2 ml-auto" />
-                  <div className="h-2 w-16 bg-white/10 rounded-full ml-auto" />
-                </div>
-              </div>
-              {/* Dashboard Preview Snippet */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 bg-white/10 rounded-xl border border-white/5">
-                  <div className="w-10 h-10 rounded-full bg-white/20" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-2.5 w-1/3 bg-white/40 rounded-full" />
-                    <div className="h-2 w-1/2 bg-white/20 rounded-full" />
-                  </div>
-                  <div className="h-6 w-12 bg-primary-container rounded-full opacity-60" />
-                </div>
-                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/5 opacity-60">
-                  <div className="w-10 h-10 rounded-full bg-white/20" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-2.5 w-1/4 bg-white/40 rounded-full" />
-                    <div className="h-2 w-2/3 bg-white/20 rounded-full" />
-                  </div>
-                </div>
-              </div>
-              {/* Floating Badge */}
-              <div className="absolute -bottom-6 -right-6 p-4 glass-card rounded-2xl flex items-center gap-3">
-                <div className="p-2 bg-green-400/20 rounded-lg">
-                  <span className="material-symbols-outlined text-green-400 text-sm fill-icon">
-                    trending_up
-                  </span>
-                </div>
-                <div>
-                  <p className="text-[10px] text-white/60 uppercase font-bold tracking-widest">
-                    Efficiency
-                  </p>
-                  <p className="text-lg font-bold text-white">+42%</p>
-                </div>
-              </div>
-            </div>
-            {/* Text Content */}
-            <div className="text-center text-primary-foreground space-y-4 px-8">
-              <h2 className="text-3xl font-bold tracking-tight">
-                The Future of Education
-              </h2>
-              <p className="font-medium text-muted  leading-relaxed max-w-lg mx-auto">
-                Manage exams, analyze performance, and empower learning with our
-                comprehensive educational ecosystem.
-              </p>
-            </div>
-          </div>
+    <>
+      <Toaster />
 
-        </section>
+      <main className="min-h-screen bg-background">
+
+        <div className="flex min-h-screen">
+
+          {/* =====================================================
+              LEFT SIDE
+          ====================================================== */}
+          <section className="flex w-full flex-col px-6 py-6 sm:px-10 md:w-[58%] md:px-14 lg:px-20">
+
+            {/* ================= LOGO ================= */}
+            <header>
+              <Link
+                to={ROUTES.LOGIN}
+                className="group inline-flex items-center gap-3"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-transform duration-300 group-hover:scale-105">
+                  <GraduationCap
+                    size={22}
+                    strokeWidth={2.2}
+                  />
+                </div>
+
+                <div>
+                  <span className="block text-lg font-bold tracking-tight text-foreground">
+                    {appName}
+                  </span>
+
+                  <span className="block text-xs text-muted-foreground">
+                    Learn. Practice. Succeed.
+                  </span>
+                </div>
+              </Link>
+            </header>
+
+
+            {/* ================= LOGIN AREA ================= */}
+            <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-12">
+
+              {/* Badge */}
+              <div className="mb-5 flex justify-center md:justify-start">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                  <Sparkles
+                    size={14}
+                    className="text-primary"
+                  />
+
+                  Welcome back
+                </div>
+              </div>
+
+
+              {/* Heading */}
+              <div className="mb-8 text-center md:text-left">
+
+                <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                  Sign in to your account
+                </h1>
+
+                <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+                  Continue your learning journey with{" "}
+                  <span className="font-medium text-foreground">
+                    {appName}
+                  </span>
+                  .
+                </p>
+
+              </div>
+
+
+              {/* ================= FORM CARD ================= */}
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-7">
+
+                <form
+                  onSubmit={handleSubmit(onSubmit)}
+                  className="space-y-5"
+                >
+
+                  {/* Email */}
+                  <EmailFeild
+                    register={register}
+                    errors={errors}
+                  />
+
+                  {/* Password */}
+                  <PasswordField
+                    register={register}
+                    errors={errors}
+                  />
+
+
+                  {/* Remember / Forgot */}
+                  <div className="flex items-center justify-between gap-4">
+
+                    <label
+                      htmlFor="remember"
+                      className="flex cursor-pointer items-center gap-2"
+                    >
+                      <input
+                        id="remember"
+                        type="checkbox"
+                        className="h-4 w-4 cursor-pointer rounded border-input bg-background accent-primary focus:ring-2 focus:ring-ring"
+                        {...register("rememberMe")}
+                      />
+
+                      <span className="text-sm text-muted-foreground">
+                        Remember me
+                      </span>
+                    </label>
+
+                    <Link
+                      to={ROUTES.FORGOTPASSWORD}
+                      className="text-sm font-medium text-primary transition-colors hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
+
+                  </div>
+
+
+                  {/* Login */}
+                  <SubmitBtn
+                    isSubmitting={isSubmitting}
+                    type="Logining"
+                  />
+
+
+                  {/* ================= DIVIDER ================= */}
+                  <div className="relative py-2">
+
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border" />
+                    </div>
+
+                    <div className="relative flex justify-center">
+                      <span className="bg-card px-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                        Or continue with
+                      </span>
+                    </div>
+
+                  </div>
+
+
+                  {/* ================= SOCIAL LOGIN ================= */}
+                  <div className="grid grid-cols-2 gap-3">
+
+                    <button
+                      type="button"
+                      className="group flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground transition-all duration-200 hover:border-primary/30 hover:bg-muted active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    >
+                      <Google />
+
+                      <span>Google</span>
+                    </button>
+
+
+                    <button
+                      type="button"
+                      className="group flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-medium text-foreground transition-all duration-200 hover:border-primary/30 hover:bg-muted active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    >
+                      <Github />
+
+                      <span>GitHub</span>
+                    </button>
+
+                  </div>
+
+                </form>
+
+              </div>
+
+
+              {/* ================= REGISTER ================= */}
+              <p className="mt-7 text-center text-sm text-muted-foreground">
+
+                Don't have an account?{" "}
+
+                <Link
+                  to={ROUTES.REGISTER}
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Create an account
+                </Link>
+
+              </p>
+
+
+              {/* Security */}
+              <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+
+                <ShieldCheck
+                  size={14}
+                  className="text-success"
+                />
+
+                Your information is securely protected
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          {/* =====================================================
+              RIGHT SIDE
+          ====================================================== */}
+          <section className="relative hidden w-[42%] overflow-hidden bg-primary md:flex">
+
+            {/* Background gradient */}
+            <div className="absolute inset-0 bg-linear-to-br from-primary via-primary to-secondary" />
+
+
+            {/* Dot pattern */}
+            <div
+              className="absolute inset-0 opacity-20"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
+                backgroundSize: "36px 36px",
+              }}
+            />
+
+
+            {/* Glow circles */}
+            <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-white/15 blur-3xl" />
+
+            <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-accent/30 blur-3xl" />
+
+
+            {/* ================= CONTENT ================= */}
+            <div className="relative z-10 flex w-full flex-col items-center justify-center px-10 py-16 lg:px-16">
+
+              {/* Small badge */}
+              <div className="mb-7 flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md">
+
+                <Sparkles size={15} />
+
+                Smarter learning starts here
+
+              </div>
+
+
+              {/* ================= DASHBOARD MOCKUP ================= */}
+              <div className="relative w-full max-w-lg">
+
+                {/* Main glass card */}
+                <div className="rounded-3xl border border-white/20 bg-white/10 p-5 shadow-2xl backdrop-blur-xl sm:p-7">
+
+                  {/* Card header */}
+                  <div className="mb-7 flex items-center justify-between">
+
+                    <div className="flex items-center gap-3">
+
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15">
+                        <ShieldCheck
+                          size={23}
+                          className="text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-semibold text-white">
+                          Learning Dashboard
+                        </p>
+
+                        <p className="text-xs text-white/60">
+                          Your progress overview
+                        </p>
+                      </div>
+
+                    </div>
+
+                    <div className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white/70">
+                      Today
+                    </div>
+
+                  </div>
+
+
+                  {/* Progress */}
+                  <div className="mb-5 rounded-2xl border border-white/10 bg-white/10 p-4">
+
+                    <div className="mb-3 flex items-center justify-between">
+
+                      <div className="flex items-center gap-3">
+
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15">
+                          <TrendingUp
+                            size={18}
+                            className="text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-medium text-white">
+                            Overall Progress
+                          </p>
+
+                          <p className="text-xs text-white/50">
+                            Keep going!
+                          </p>
+                        </div>
+
+                      </div>
+
+                      <span className="text-lg font-bold text-white">
+                        78%
+                      </span>
+
+                    </div>
+
+                    <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                      <div className="h-full w-[78%] rounded-full bg-white" />
+                    </div>
+
+                  </div>
+
+
+                  {/* Subjects */}
+                  <div className="space-y-3">
+
+                    {/* Mathematics */}
+                    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
+
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-xs font-bold text-white">
+                        M
+                      </div>
+
+                      <div className="flex-1">
+
+                        <div className="mb-1.5 flex justify-between">
+                          <span className="text-xs font-medium text-white">
+                            Mathematics
+                          </span>
+
+                          <span className="text-[11px] text-white/50">
+                            85%
+                          </span>
+                        </div>
+
+                        <div className="h-1.5 rounded-full bg-white/10">
+                          <div className="h-full w-[85%] rounded-full bg-white/70" />
+                        </div>
+
+                      </div>
+
+                    </div>
+
+
+                    {/* Physics */}
+                    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
+
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-xs font-bold text-white">
+                        P
+                      </div>
+
+                      <div className="flex-1">
+
+                        <div className="mb-1.5 flex justify-between">
+                          <span className="text-xs font-medium text-white">
+                            Physics
+                          </span>
+
+                          <span className="text-[11px] text-white/50">
+                            72%
+                          </span>
+                        </div>
+
+                        <div className="h-1.5 rounded-full bg-white/10">
+                          <div className="h-full w-[72%] rounded-full bg-white/50" />
+                        </div>
+
+                      </div>
+
+                    </div>
+
+
+                    {/* Computer */}
+                    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
+
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-xs font-bold text-white">
+                        C
+                      </div>
+
+                      <div className="flex-1">
+
+                        <div className="mb-1.5 flex justify-between">
+                          <span className="text-xs font-medium text-white">
+                            Computer Science
+                          </span>
+
+                          <span className="text-[11px] text-white/50">
+                            91%
+                          </span>
+                        </div>
+
+                        <div className="h-1.5 rounded-full bg-white/10">
+                          <div className="h-full w-[91%] rounded-full bg-white/80" />
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+                {/* ================= FLOATING BADGE ================= */}
+                <div className="absolute -bottom-7 -right-5 flex items-center gap-3 rounded-2xl border border-white/20 bg-white/15 p-4 shadow-xl backdrop-blur-xl">
+
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/20">
+                    <TrendingUp
+                      size={19}
+                      className="text-success"
+                    />
+                  </div>
+
+                  <div>
+
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-white/50">
+                      Efficiency
+                    </p>
+
+                    <p className="text-lg font-bold text-white">
+                      +42%
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              {/* ================= TEXT ================= */}
+              <div className="mt-14 max-w-xl text-center text-primary-foreground">
+
+                <h2 className="text-3xl font-bold tracking-tight lg:text-4xl">
+                  The future of education
+                </h2>
+
+                <p className="mt-4 text-sm leading-7 text-white/70 lg:text-base">
+                  Manage exams, practice smarter, analyze your
+                  performance, and build confidence with your
+                  complete educational ecosystem.
+                </p>
+
+              </div>
+
+
+              {/* Features */}
+              <div className="mt-8 grid grid-cols-3 gap-3">
+
+                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
+                  <CheckCircle2 size={14} />
+                  Practice
+                </div>
+
+                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
+                  <CheckCircle2 size={14} />
+                  Analyze
+                </div>
+
+                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
+                  <CheckCircle2 size={14} />
+                  Improve
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        </div>
+
       </main>
     </>
   );
