@@ -7,30 +7,29 @@ export const ROUTES = {
   FORGOTPASSWORD: "/forgotpasswordk",
 
   DASHBOARD: "/dashboard",
-
   CREATETEST: "/createtest",
-  TESTINFO: "/createtest/test-info",
-  ADDQUESTION: "/createtest/add-question",
-  ADDNEWQUESTION: "/createtest/add-new-question",
-  ADDNEWQUESTIONLIST: "/createtest/add-new-question-list",
-  TESTSETTING: "/createtest/test-setting",
-  TESTSTRUCTURE: "/createtest/test-structure",
-  TESTPUBLISH: "/createtest/test-publish",
-  
+  TESTINFO: "test-info",
+  TESTSETTING: "test-setting",
+  TESTSTRUCTURE: "test-structure",
+  TESTPUBLISH: "test-publish",
+  ADDQUESTION: "add-question",
+  ADDNEWQUESTION: "add-new-question",
+  ADDNEWQUESTIONLIST: "added-question-list",
+
   EXPLOREQUIZ: "/explore",
   EXPLORECARDINFO: "card-info",
 
   MYTESTS: "/my-test",
 
   MYQUESTIONS: "/my-questions",
-  
+
   SETTINGSPAGE: "/settings",
 
   ATTEMPTEDTESTS: "/attempted-tests",
 
-  QUIZINTERFACE:"/quiz",
+  QUIZINTERFACE: "/quiz",
 
-  CATEGORY :"/category",
+  CATEGORY: "/category",
   PROFILE: "/profile",
 
   RESULT: "/results",

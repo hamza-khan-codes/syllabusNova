@@ -34,7 +34,11 @@ import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
 import { ROUTES } from "@/constant/routes";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+import Toaster from "../ui/sonner";
+import { updateTestController } from "@/controllers/Create Test/createTestControllers";
+import getInsertNewItemInArray from "@/utils/getInsertNewItemInArray";
 
 export default function CreateTestSetting({
   initialData = {},
@@ -44,6 +48,7 @@ export default function CreateTestSetting({
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { testId } = useParams()
 
   const createTest = useSelector((state) => state.createTest);
 
@@ -98,48 +103,64 @@ export default function CreateTestSetting({
     console.log("Errors:", errors);
   }, [errors]);
 
-  const handleFormSubmit = (data) => {
-    const payload = {
-      ...data,
-      duration: Number(data.duration),
-      negativeMarks: Number(data.negativeMarks),
-      passingPercentage: Number(data.passingPercentage),
-      passingMarks: Number(data.passingMarks || 0),
-    };
+  const handleFormSubmit = async (data) => {
+    let toastId;
+    try {
 
-    const updatedCreateTest = {
-      ...createTest,
-      settings: {
-        ...createTest.settings,
-        ...payload,
-      },
-    };
+      const payload = {
+        ...data,
+        duration: Number(data.duration),
+        negativeMarks: Number(data.negativeMarks),
+        passingPercentage: Number(data.passingPercentage),
+        passingMarks: Number(data.passingMarks || 0),
+      };
 
-    console.log("DATA:", updatedCreateTest);
+      const updatedCreateTest = {
+        settings: {
+          ...createTest.settings,
+          ...payload,
+        },
+        workflow: {
+          ...createTest.workflow,
+          completed: getInsertNewItemInArray(createTest.workflow.completed,
+            WORKFLOW_CREATETEST_STEPS.steps[2].step)
+          ,
+          previousStep: WORKFLOW_CREATETEST_STEPS.steps[2].step,
+          visited:getInsertNewItemInArray(createTest.workflow.visited,
+            WORKFLOW_CREATETEST_STEPS.steps[3].step)
+          ,
+          currentStep: WORKFLOW_CREATETEST_STEPS.steps[3].step,
+          nextStep: WORKFLOW_CREATETEST_STEPS.steps[4].step,
+        }
+      };
 
-    dispatch(updateSettings(payload));
+      console.log("DATA:", updatedCreateTest);
 
-    localStorage.setItem(
-      "createTest",
-      JSON.stringify(updatedCreateTest)
-    );
+      dispatch(updateSettings(payload));
 
-    dispatch(
-      setCurrentStep(
-        WORKFLOW_CREATETEST_STEPS.steps[3].step
-      )
-    );
+      dispatch(
+        setCurrentStep(
+          WORKFLOW_CREATETEST_STEPS.steps[3].step
+        )
+      );
 
-    dispatch(
-      completeStep(
-        WORKFLOW_CREATETEST_STEPS.steps[2].step
-      )
-    );
+      dispatch(
+        completeStep(
+          WORKFLOW_CREATETEST_STEPS.steps[2].step
+        )
+      );
+      toastId = toast.loading("Updating test...");
+      await updateTestController(testId, updatedCreateTest)
+      toast.success("Updated successfully!", {
+        id: toastId,
+      });
+      navigate(ROUTES.CREATETEST + "/" + testId + "/" + ROUTES.ADDQUESTION);
 
-    if (onContinue) {
-      onContinue(payload);
-    } else {
-      navigate(ROUTES.ADDQUESTION);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error ! ", {
+        id: toastId,
+      });
     }
   };
 
@@ -156,6 +177,7 @@ export default function CreateTestSetting({
         onSubmit={handleSubmit(handleFormSubmit)}
         className="min-h-screen"
       >
+        <Toaster />
         {/* ================= CONTENT ================= */}
 
         <div
@@ -403,7 +425,7 @@ export default function CreateTestSetting({
                             Math.round(
                               (totalMarks *
                                 percentage) /
-                                100
+                              100
                             )
                           );
                         },
@@ -716,8 +738,7 @@ export default function CreateTestSetting({
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium">
                               {section.title ||
-                                `Section ${
-                                  index + 1
+                                `Section ${index + 1
                                 }`}
                             </p>
 
@@ -871,10 +892,9 @@ function Toggle({ checked, onClick }) {
         focus:outline-none
         focus:ring-2
         focus:ring-primary/20
-        ${
-          checked
-            ? "bg-primary"
-            : "bg-muted"
+        ${checked
+          ? "bg-primary"
+          : "bg-muted"
         }
       `}
     >
@@ -888,10 +908,9 @@ function Toggle({ checked, onClick }) {
           bg-white
           shadow-sm
           transition-all
-          ${
-            checked
-              ? "left-[22px]"
-              : "left-[2px]"
+          ${checked
+            ? "left-[22px]"
+            : "left-[2px]"
           }
         `}
       />

@@ -1,4 +1,9 @@
+import { TEST_STATUS } from "@/constant/createTest/roleStatus";
 import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
+import { getCurrentUser } from "@/services/firestoreService";
+
+const user = await getCurrentUser()
+
 
  const createTestInitialState = {
   info: {
@@ -27,16 +32,17 @@ import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
   },
 
   publish: {
-    status: "draft",
+    status: TEST_STATUS.DRAFT,
     visibility: "private",
-    approvalStatus: "pending",
+    approvalStatus: TEST_STATUS.PENDING,
     approvedBy: null,
     approvedAt: null,
+    rejectionReason:null
   },
 
   creator: {
-    uid: "",
-    name: "",
+    uid: user.uid,
+    name: user.name,
   },
 
    questions: [],

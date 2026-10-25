@@ -40,6 +40,7 @@ import {
   clearEditQuestion,
   completeStep,
   setCurrentStep,
+  updateCreateTest,
   updateQuestion,
 } from "@/features/CreateTest/createTestSlices";
 
@@ -48,12 +49,16 @@ import getHtmlToText from "@/utils/getHtmlToText";
 import { ADD_NEW_QUESTION } from "@/constant/validation";
 import { ROUTES } from "@/constant/routes";
 import useMoveToNext from "@/hooks/useMoveToNext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import StepTreaker from "./StepTreaker";
+import { setQuestionsController } from "@/controllers/Create Test/createTestControllers";
+
 
 export default function AddNewQuestion() {
   const createTest = useSelector((state) => state.createTest);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { testId } = useParams();
 
   const { sections = [] } = createTest?.structure || {};
   const { questions = [] } = createTest;
@@ -94,8 +99,8 @@ export default function AddNewQuestion() {
       sectionId: "",
       questionId: crypto.randomUUID(),
       marks:
-        createTest.structure.totalMarks /
-        createTest.structure.totalQuestions,
+        (createTest.structure.totalMarks /
+          createTest.structure.totalQuestions) || 0,
       status: "saved",
       isSectionWise: createTest.structure.isSectionWise,
     },
@@ -109,6 +114,8 @@ export default function AddNewQuestion() {
     control,
     name: "options",
   });
+
+  console.log("Hook From Error : ", errors)
 
   const isSectionWise = watch("isSectionWise");
   const correctAnswer = watch("correctAnswer");
@@ -186,7 +193,7 @@ export default function AddNewQuestion() {
   };
 
   useEffect(() => {
-    if (createTest.edit.length === 1) {
+    if (createTest.edit?.length === 1) {
       EditQuestion(createTest.edit[0]);
     }
   }, []);
@@ -266,10 +273,10 @@ export default function AddNewQuestion() {
 
   const createdSecQuestions = isSectionWise
     ? questions.filter(
-        (q) =>
-          q?.sectionId?.trim() ===
-          selectedSection[0]?.sectionId?.trim(),
-      )
+      (q) =>
+        q?.sectionId?.trim() ===
+        selectedSection[0]?.sectionId?.trim(),
+    )
     : questions;
 
   const sectionQuestionLimit =
@@ -278,150 +285,168 @@ export default function AddNewQuestion() {
   const questionProgress =
     sectionQuestionLimit > 0
       ? Math.min(
-          (createdSecQuestions.length / sectionQuestionLimit) * 100,
-          100,
-        )
+        (createdSecQuestions?.length / sectionQuestionLimit) * 100,
+        100,
+      )
       : 0;
 
   /* =========================================================
      Submit
   ========================================================= */
+  console.log("CREATE TEST :", createTest)
 
-  const onSubmit = (payload) => {
-    if (!isMultiple && correctAnswer.length === 0) {
-      return setError("correctAnswer", {
-        type: "manual",
-        message: "Select one correct answer.",
-      });
-    }
+  const onSubmit = async (payload) => {
+    console.log("ONSUBMIT")
+    setValue("marks", (createTest.structure.totalMarks /
+      createTest.structure.totalQuestions))
+    console.log("Payload : ", payload, (createTest.structure.totalMarks /
+      createTest.structure.totalQuestions)) 
+    let toastId
+    try {
 
-    if (isMultiple && correctAnswer.length < 2) {
-      return setError("correctAnswer", {
-        type: "manual",
-        message: "Select at least two correct answers.",
-      });
-    }
+      if (!isMultiple && correctAnswer?.length === 0) {
+        return setError("correctAnswer", {
+          type: "manual",
+          message: "Select one correct answer.",
+        });
+      }
 
-    if (
-      isSectionWise &&
-      selectedSection[0]?.questions === createdSecQuestions.length
-    ) {
-      return toast.error(
-        "You cannot add more questions to this section.",
-      );
-    }
+      if (isMultiple && correctAnswer?.length < 2) {
+        return setError("correctAnswer", {
+          type: "manual",
+          message: "Select at least two correct answers.",
+        });
+      }
 
-    if (
-      !isSectionWise &&
-      selectedSection[0]?.questions === questions.length
-    ) {
-      return toast.error(
-        "You cannot add more questions to this test.",
-      );
-    }
+      if (
+        isSectionWise &&
+        selectedSection[0]?.questions === createdSecQuestions?.length
+      ) {
+        return toast.error(
+          "You cannot add more questions to this section.",
+        );
+      }
 
-    const Question = getHtmlToText(payload.question)
-      .replace(/[^a-zA-Z0-9\s]/g, "")
-      .trim();
+      if (
+        !isSectionWise &&
+        selectedSection[0]?.questions === questions?.length && !(createTest.edit?.length === 1)
+      ) {
+        return toast.error(
+          "You cannot add more questions to this test.",
+        );
+      }
 
-    const Options = payload.options;
-
-    const Questions = questions.map((q) => ({
-      question: getHtmlToText(q.question),
-      options: q.options,
-    }));
-
-    const isExist = Questions.some((qs) => {
-      const q = qs.question
+      const Question = getHtmlToText(payload.question)
         .replace(/[^a-zA-Z0-9\s]/g, "")
         .trim();
 
-      const isOpExist = qs.options.every((op) => {
-        const opText = op.text
-          .trim()
-          .replace(/[^a-zA-Z0-9\s]/g, "");
+      const Options = payload.options;
 
-        return Options.some((payloadOp) => {
-          const payloadTextOp = payloadOp.text
+      const Questions = questions.map((q) => ({
+        question: getHtmlToText(q.question),
+        options: q.options,
+      }));
+
+      const isExist = Questions.some((qs) => {
+        const q = qs.question
+          .replace(/[^a-zA-Z0-9\s]/g, "")
+          .trim();
+
+        const isOpExist = qs.options.every((op) => {
+          const opText = op.text
             .trim()
             .replace(/[^a-zA-Z0-9\s]/g, "");
 
-          return opText === payloadTextOp;
+          return Options.some((payloadOp) => {
+            const payloadTextOp = payloadOp.text
+              .trim()
+              .replace(/[^a-zA-Z0-9\s]/g, "");
+
+            return opText === payloadTextOp;
+          });
         });
+
+        return q === Question && isOpExist;
       });
 
-      return q === Question && isOpExist;
-    });
+      if (isExist && createTest.edit?.length !== 1) {
+        toast.error("Error! : This question already exists, including its options.")
+        return setError("question", {
+          type: "manual",
+          message:
+            "This question already exists, including its options.",
+        });
+      }
 
-    if (isExist && createTest.edit.length !== 1) {
-      return setError("question", {
-        type: "manual",
-        message:
-          "This question already exists, including its options.",
-      });
-    }
+      let updatedQuestions;
 
-    let updatedCreateTest;
+      if (createTest.edit?.length === 1) {
+        dispatch(updateQuestion(payload));
 
-    if (createTest.edit.length === 1) {
-      dispatch(updateQuestion(payload));
+        const clean = questions.filter(
+          (q) => q.questionId !== payload.questionId,
+        );
 
-      const clean = questions.filter(
-        (q) => q.questionId !== payload.questionId,
+        updatedQuestions = {
+          questions: [...clean, payload],
+        };
+      } else {
+        const newPayload = {
+          ...payload,
+          questionId: crypto.randomUUID(),
+        };
+
+        dispatch(addQuestion(newPayload));
+
+        updatedQuestions = {
+          questions: [...questions, newPayload],
+        };
+      }
+
+
+      console.log("Questions *** :: ", updatedQuestions)
+
+      toastId = toast.loading(
+        `Question ${createTest.edit?.length === 1 ? "editing..." : "adding..."
+        }.`,
+      );
+      await setQuestionsController(testId, updatedQuestions.questions)
+      toast.success(
+        `Question ${createTest.edit?.length === 1 ? "edited" : "added"
+        } successfully.`, {
+        id: toastId
+      }
       );
 
-      updatedCreateTest = {
-        ...createTest,
-        edit: [],
-        questions: [...clean, payload],
-      };
-    } else {
-      const newPayload = {
-        ...payload,
-        questionId: crypto.randomUUID(),
-      };
+      dispatch(clearEditQuestion());
 
-      dispatch(addQuestion(newPayload));
+      resetField("question");
 
-      updatedCreateTest = {
-        ...createTest,
-        questions: [...questions, newPayload],
-        edit: [],
-      };
+      resetField("options", {
+        defaultValue: [
+          createOption(),
+          createOption(),
+          createOption(),
+        ],
+      });
+
+      resetField("correctAnswer", {
+        defaultValue: [],
+      });
+
+      resetField("topic");
+
+      resetField("difficulty");
+
+      editor?.commands.clearContent();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        `Error ! `, error, {
+        id: toastId
+      }
+      );
     }
-
-    localStorage.setItem(
-      "createTest",
-      JSON.stringify(updatedCreateTest),
-    );
-
-    toast.success(
-      `Question ${
-        createTest.edit.length === 1 ? "edited" : "added"
-      } successfully.`,
-    );
-
-    dispatch(clearEditQuestion());
-
-    resetField("question");
-
-    resetField("options", {
-      defaultValue: [
-        createOption(),
-        createOption(),
-        createOption(),
-      ],
-    });
-
-    resetField("correctAnswer", {
-      defaultValue: [],
-    });
-
-    resetField("topic");
-
-    resetField("difficulty");
-
-    editor?.commands.clearContent();
   };
 
   /* =========================================================
@@ -446,7 +471,7 @@ export default function AddNewQuestion() {
     dispatch(setCurrentStep(nextStep.step));
     dispatch(completeStep(createTest.workflow.currentStep));
 
-    navigate(nextStep.path);
+    navigate(ROUTES.CREATETEST + "/" + testId + "/" + nextStep.path);
   };
 
   /* =========================================================
@@ -471,12 +496,12 @@ export default function AddNewQuestion() {
             <button
               type="button"
               onClick={() => {
-                if (createTest.edit.length === 1) {
+                if (createTest.edit?.length === 1) {
                   toast.error("Please finish editing this question.");
                   return;
                 }
 
-                navigatehandle(ROUTES.ADDNEWQUESTIONLIST);
+                navigatehandle(ROUTES.CREATETEST + "/" + testId + "/" + ROUTES.ADDNEWQUESTIONLIST);
               }}
               className="group flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
             >
@@ -495,7 +520,7 @@ export default function AddNewQuestion() {
               </p>
 
               <p className="text-sm font-semibold">
-                {createdSecQuestions.length} /{" "}
+                {createdSecQuestions?.length} /{" "}
                 {sectionQuestionLimit}
               </p>
             </div>
@@ -551,11 +576,10 @@ export default function AddNewQuestion() {
 
                 <div className="h-2 overflow-hidden rounded-full bg-muted">
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      questionProgress >= 100
-                        ? "bg-success"
-                        : "bg-primary"
-                    }`}
+                    className={`h-full rounded-full transition-all duration-500 ${questionProgress >= 100
+                      ? "bg-success"
+                      : "bg-primary"
+                      }`}
                     style={{
                       width: `${questionProgress}%`,
                     }}
@@ -564,6 +588,11 @@ export default function AddNewQuestion() {
               </div>
             </div>
           </div>
+
+          {/* ===================================================
+          Steps
+          ======================================================= */}
+          <StepTreaker />
 
           {/* ===================================================
               Editor Card
@@ -715,7 +744,7 @@ export default function AddNewQuestion() {
                   </h2>
 
                   <Badge className="bg-muted text-muted-foreground">
-                    {fields.length} options
+                    {fields?.length} options
                   </Badge>
                 </div>
 
@@ -727,7 +756,7 @@ export default function AddNewQuestion() {
               <button
                 type="button"
                 disabled={
-                  options.length >=
+                  options?.length >=
                   ADD_NEW_QUESTION.QUESTION.MAX_OPTIONS
                 }
                 onClick={() => append(createOption())}
@@ -747,11 +776,10 @@ export default function AddNewQuestion() {
                 return (
                   <div
                     key={field.id}
-                    className={`group flex items-start gap-3 rounded-xl border p-3 transition sm:items-center sm:p-4 ${
-                      isCorrect
-                        ? "border-success/50 bg-success/5 shadow-sm"
-                        : "border-border bg-background hover:border-primary/30"
-                    }`}
+                    className={`group flex items-start gap-3 rounded-xl border p-3 transition sm:items-center sm:p-4 ${isCorrect
+                      ? "border-success/50 bg-success/5 shadow-sm"
+                      : "border-border bg-background hover:border-primary/30"
+                      }`}
                   >
                     {/* Correct selector */}
 
@@ -760,14 +788,12 @@ export default function AddNewQuestion() {
                       onClick={() =>
                         setCorrect(field.optionId)
                       }
-                      aria-label={`Mark option ${
-                        index + 1
-                      } as correct`}
-                      className={`mt-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition sm:mt-0 ${
-                        isCorrect
-                          ? "border-success bg-success text-primary-foreground"
-                          : "border-muted-foreground/30 hover:border-primary"
-                      }`}
+                      aria-label={`Mark option ${index + 1
+                        } as correct`}
+                      className={`mt-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition sm:mt-0 ${isCorrect
+                        ? "border-success bg-success text-primary-foreground"
+                        : "border-muted-foreground/30 hover:border-primary"
+                        }`}
                     >
                       {isCorrect && <Check size={15} />}
                     </button>
@@ -775,11 +801,10 @@ export default function AddNewQuestion() {
                     {/* Option letter */}
 
                     <div
-                      className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold sm:mt-0 ${
-                        isCorrect
-                          ? "bg-success/10 text-success"
-                          : "bg-muted text-muted-foreground"
-                      }`}
+                      className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold sm:mt-0 ${isCorrect
+                        ? "bg-success/10 text-success"
+                        : "bg-muted text-muted-foreground"
+                        }`}
                     >
                       {String.fromCharCode(65 + index)}
                     </div>
@@ -820,7 +845,7 @@ export default function AddNewQuestion() {
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      disabled={fields.length <= 2}
+                      disabled={fields?.length <= 2}
                       className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-30 sm:mt-0"
                     >
                       <Trash2 size={16} />
@@ -860,11 +885,10 @@ export default function AddNewQuestion() {
             </div>
 
             <div
-              className={`grid gap-5 ${
-                isSectionWise
-                  ? "grid-cols-1 md:grid-cols-3"
-                  : "grid-cols-1 md:grid-cols-2"
-              }`}
+              className={`grid gap-5 ${isSectionWise
+                ? "grid-cols-1 md:grid-cols-3"
+                : "grid-cols-1 md:grid-cols-2"
+                }`}
             >
               {/* Section */}
 
@@ -882,11 +906,11 @@ export default function AddNewQuestion() {
                   <div className="relative">
                     <select
                       {...register("section")}
-                      disabled={sections.length === 0}
+                      disabled={sections?.length === 0}
                       className="input appearance-none pr-10"
                     >
                       <option value="" disabled>
-                        {sections.length === 0
+                        {sections?.length === 0
                           ? "No sections available"
                           : "Select section"}
                       </option>
@@ -1050,7 +1074,15 @@ export default function AddNewQuestion() {
 
             <div className="flex flex-col gap-3 sm:flex-row">
 
-              <button
+              {createTest.structure.totalQuestions ===
+                createTest.questions?.length ? <button
+                  type="button"
+                  onClick={handleNext}
+                  className="ml-auto inline-flex items-center gap-2 rounded-xl bg-success px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-success/20 transition hover:bg-success/90 active:scale-[0.98]"
+                >
+                Continue and Publish
+                <ArrowRight size={18} />
+              </button> : <button
                 type="submit"
                 className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 active:scale-[0.98]"
               >
@@ -1059,7 +1091,7 @@ export default function AddNewQuestion() {
                   size={17}
                   className="transition-transform group-hover:translate-x-1"
                 />
-              </button>
+              </button>}
             </div>
           </div>
         </main>
@@ -1070,25 +1102,18 @@ export default function AddNewQuestion() {
       ======================================================= */}
 
       {createTest.structure.totalQuestions ===
-        createTest.questions.length && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 shadow-2xl backdrop-blur-xl lg:left-64">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-            <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-              <Info size={15} />
-              All questions have been added.
-            </div>
+        createTest.questions?.length && (
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 shadow-2xl backdrop-blur-xl lg:left-64">
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+              <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
+                <Info size={15} />
+                All questions have been added.
+              </div>
 
-            <button
-              type="button"
-              onClick={handleNext}
-              className="ml-auto inline-flex items-center gap-2 rounded-xl bg-success px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-success/20 transition hover:bg-success/90 active:scale-[0.98]"
-            >
-              Continue to Publish
-              <ArrowRight size={18} />
-            </button>
+
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </>
   );
 }
@@ -1108,11 +1133,10 @@ function ToolbarButton({
       type="button"
       title={label}
       onClick={onClick}
-      className={`flex h-8 items-center justify-center rounded-lg px-2.5 transition ${
-        active
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-background hover:text-foreground"
-      }`}
+      className={`flex h-8 items-center justify-center rounded-lg px-2.5 transition ${active
+        ? "bg-primary/10 text-primary"
+        : "text-muted-foreground hover:bg-background hover:text-foreground"
+        }`}
     >
       {children}
     </button>

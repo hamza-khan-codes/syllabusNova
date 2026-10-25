@@ -1,12 +1,14 @@
 import Countdown from "@/components/common/Countdown";
 import Toaster from "@/components/ui/sonner";
 import { appName } from "@/constant/brand";
+import { STATUS } from "@/constant/createTest/roleStatus";
 import { ROUTES } from "@/constant/routes";
 import { resentVeriEmailInMin } from "@/constant/Timer";
 import {
   authStateController,
   logoutController,
   resentVerificationMailController,
+  updateUserController,
 } from "@/controllers/authControllers";
 
 import { authLogout, authStateAndSuccess } from "@/features/Auth/authSlices";
@@ -49,6 +51,7 @@ export default function Verification() {
           dispatch(
             authStateAndSuccess({ emailVerified, displayName, email, uid }),
           );
+        
         } else {
           toast.error(
             "Your email isn't verified yet. Please check your inbox and try again.",
@@ -90,7 +93,7 @@ export default function Verification() {
           label: "Open",
           onClick: () => window.open(getUsersMailBoxUrl(user.email), "_blank"),
         },
-        duration: 18000,
+        duration: 1000,
         className: "custom-info-toast",
       });
 

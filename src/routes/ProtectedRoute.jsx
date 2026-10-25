@@ -6,6 +6,7 @@ import Loading from "@/components/common/Loading";
 export default function ProtectedRoute() {
   const { user, loading } = useSelector((state) => state.auth);
 
+
   if (loading) {
     return (
       <div className="absolute inset-0 bg-background flex justify-center items-center">
@@ -17,6 +18,7 @@ export default function ProtectedRoute() {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
   if (!user.emailVerified) {
+
     return <Navigate to={ROUTES.VERIFICATION} replace />;
   }
 

@@ -1,4 +1,3 @@
-// constants/createTestValidation.js
 
 export const TEST_VALIDATION = {
   SECTION: {

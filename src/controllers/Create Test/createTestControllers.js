@@ -1,8 +1,12 @@
 import {
   addTest,
+  getData,
   setQuestion,
   setQuestions,
+  updateTest,
 } from "@/services/firestoreService";
+import { getQuizMetaDataController, getQuizQuestionsController } from "../Quiz/QuizControllers";
+import { toast } from "sonner";
 
 export async function addTestController(testData) {
   try {
@@ -12,13 +16,34 @@ export async function addTestController(testData) {
     if (!testData.length === 5)
       throw new Error("Please enter all feilds - addTestController", testData);
 
-    
+
     return await addTest(testData);
   } catch (error) {
     console.error(error);
     return false;
   }
 }
+
+export async function updateTestController(testId, updatedData) {
+  try {
+    if (!testId || !updatedData) throw new Error("TestID and updatedData are required.");
+    await updateTest(testId, updatedData)
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function getTestController(testId) { // This Function is unuse
+  try {
+    if (!testId) throw new Error("Test ID is required.");
+    const metaData = await getQuizMetaDataController(testId);
+
+    return metaData
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 export async function setQuestionController(testId, question) {
   try {
     if (!testId)
@@ -38,15 +63,16 @@ export async function setQuestionController(testId, question) {
 export async function setQuestionsController(testId, questions) {
   try {
     if (!testId)
-      throw new Error("Please Enter Test ID - setQuestionsController");
+      throw new Error("Please Enter Test ID :: setQuestionsController");
 
     if (!questions)
-      throw new Error("Please enter question- setQuestionsController");
+      throw new Error("Please enter question :: setQuestionsController");
 
     await setQuestions(testId, questions);
     return true;
   } catch (error) {
     console.error(error);
+    toast.error("Error ! : ",error)
     return false;
   }
 }

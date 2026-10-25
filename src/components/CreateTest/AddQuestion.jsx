@@ -10,12 +10,15 @@ import {
 
 import { ROUTES } from "@/constant/routes";
 import useMoveToNext from "@/hooks/useMoveToNext";
+import { useParams } from "react-router-dom";
 
 export default function AddQuestion() {
   const moveToNext = useMoveToNext();
+  const {testId} = useParams()
+
 
   const handleCreateNew = () => {
-    moveToNext(ROUTES.ADDNEWQUESTION, true);
+    moveToNext(ROUTES.CREATETEST + "/" + testId + "/" + ROUTES.ADDNEWQUESTION, true);
   };
 
   return (

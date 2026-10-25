@@ -854,7 +854,9 @@ export default function IndualQluizInterface() {
 
         quizId,
 
-        user,
+        user: {
+          uid:user.uid
+        },
 
         testDetails,
 

@@ -37,9 +37,14 @@ import {
 } from "../ui/dialog";
 
 import QuestionPreview from "./QuestionPreview";
+import Toaster from "../ui/sonner";
+import { toast } from "sonner";
+import { updateTestController } from "@/controllers/Create Test/createTestControllers";
+import { useParams } from "react-router-dom";
 
 export default function AddedQuestionList() {
   const createTest = useSelector((state) => state.createTest);
+  const {testId} = useParams()
 
   const dispatch = useDispatch();
   const moveToNext = useMoveToNext();
@@ -152,7 +157,7 @@ export default function AddedQuestionList() {
 
   const handleEdit = (id) => {
     dispatch(editQuestion([id]));
-    moveToNext(ROUTES.ADDNEWQUESTION);
+    moveToNext(ROUTES.CREATETEST + "/" + testId + "/" + ROUTES.ADDNEWQUESTION);
   };
 
   /* =========================================================
@@ -186,28 +191,45 @@ export default function AddedQuestionList() {
     setConfirm(true);
   };
 
-  const handleDeleteQuestion = () => {
-    if (!deleteId) return;
+  const handleDeleteQuestion = async () => {
+    let toastId
+    try {
 
-    dispatch(deleteQuestion(deleteId));
+      if (!deleteId) return;
 
-    const updatedQuestions = questions.filter(
-      (question) =>
-        question.questionId !== deleteId
-    );
+      dispatch(deleteQuestion(deleteId));
 
-    const updatedCreateTest = {
-      ...createTest,
-      questions: updatedQuestions,
-    };
+      const updatedQuestions = questions.filter(
+        (question) =>
+          question.questionId !== deleteId
+      );
 
-    localStorage.setItem(
-      "createTest",
-      JSON.stringify(updatedCreateTest)
-    );
+      const updatedCreateTest = {
+        ...createTest,
+        questions: updatedQuestions,
+      };
+      
+      setConfirm(false);
+      toastId = toast.loading(`Deleting...`);
+      await updateTestController(testId, updatedCreateTest)
+      toast.success(
+        `Permanently Deleted`, {
+        id: toastId
+      }
+      );
 
-    setDeleteId(null);
-    setConfirm(false);
+    } catch (error) {
+      console.error(error)
+      toast.error(
+        error, {
+        id: toastId
+      }
+      );
+    } finally {
+      setDeleteId(null);
+      setConfirm(false);
+      
+    }
   };
 
   /* =========================================================
@@ -227,9 +249,9 @@ export default function AddedQuestionList() {
   const overallProgress =
     totalQuestions > 0
       ? Math.min(
-          (addedQuestions / totalQuestions) * 100,
-          100
-        )
+        (addedQuestions / totalQuestions) * 100,
+        100
+      )
       : 0;
 
   const hasFilters =
@@ -241,6 +263,7 @@ export default function AddedQuestionList() {
 
   return (
     <>
+      <Toaster />
       {/* =====================================================
           DELETE DIALOG
       ===================================================== */}
@@ -342,7 +365,7 @@ export default function AddedQuestionList() {
               <button
                 type="button"
                 onClick={() =>
-                  moveToNext(ROUTES.ADDNEWQUESTION)
+                  moveToNext(ROUTES.CREATETEST + "/" + testId + "/" + ROUTES.ADDNEWQUESTION)
                 }
                 className="group inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-primary/30 active:translate-y-0 lg:w-auto"
               >
@@ -415,11 +438,10 @@ export default function AddedQuestionList() {
 
               <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className={`h-full max-w-full rounded-full transition-all duration-500 ${
-                    overallProgress >= 100
-                      ? "bg-success"
-                      : "bg-primary"
-                  }`}
+                  className={`h-full max-w-full rounded-full transition-all duration-500 ${overallProgress >= 100
+                    ? "bg-success"
+                    : "bg-primary"
+                    }`}
                   style={{
                     width: `${overallProgress}%`,
                   }}
@@ -525,11 +547,11 @@ export default function AddedQuestionList() {
               const percentage =
                 section.sectionQuestions > 0
                   ? Math.min(
-                      (section.questionNum /
-                        section.sectionQuestions) *
-                        100,
-                      100
-                    )
+                    (section.questionNum /
+                      section.sectionQuestions) *
+                    100,
+                    100
+                  )
                   : 0;
 
               return (
@@ -572,11 +594,10 @@ export default function AddedQuestionList() {
 
                         <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                           <div
-                            className={`h-full max-w-full rounded-full transition-all ${
-                              percentage >= 100
-                                ? "bg-success"
-                                : "bg-primary"
-                            }`}
+                            className={`h-full max-w-full rounded-full transition-all ${percentage >= 100
+                              ? "bg-success"
+                              : "bg-primary"
+                              }`}
                             style={{
                               width: `${percentage}%`,
                             }}
@@ -614,7 +635,7 @@ export default function AddedQuestionList() {
                       hasFilters={hasFilters}
                       onAdd={() =>
                         moveToNext(
-                          ROUTES.ADDNEWQUESTION
+                          ROUTES.CREATETEST + "/" + testId + "/" + ROUTES.ADDNEWQUESTION
                         )
                       }
                     />
@@ -675,11 +696,10 @@ function StatCard({
     <div className="w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex min-w-0 items-center gap-3">
         <div
-          className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${
-            success
-              ? "bg-success/10 text-success"
-              : "bg-primary/10 text-primary"
-          }`}
+          className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${success
+            ? "bg-success/10 text-success"
+            : "bg-primary/10 text-primary"
+            }`}
         >
           <Icon className="size-5" />
         </div>
@@ -723,8 +743,8 @@ function QuestionItem({
     difficulty === "easy"
       ? "bg-success/10 text-success"
       : difficulty === "medium"
-      ? "bg-warning/10 text-warning"
-      : "bg-destructive/10 text-destructive";
+        ? "bg-warning/10 text-warning"
+        : "bg-destructive/10 text-destructive";
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-hidden p-4 transition-colors hover:bg-muted/20 sm:p-5">
@@ -775,11 +795,10 @@ function QuestionItem({
             </span>
 
             <span
-              className={`inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold ${
-                isCompleted
-                  ? "text-success"
-                  : "text-warning"
-              }`}
+              className={`inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold ${isCompleted
+                ? "text-success"
+                : "text-warning"
+                }`}
             >
               {isCompleted ? (
                 <CheckCircle2 className="size-3.5 shrink-0" />

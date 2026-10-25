@@ -30,14 +30,14 @@ export default function Toaster(props) {
         success: (
           <CircleCheck
             size={18}
-            className="text-green-500"
+            className="text-success"
             strokeWidth={2.5}
           />
         ),
         error: (
           <CircleAlert
             size={18}
-            className="text-red-500"
+            className="text-destructive"
             strokeWidth={2.5}
           />
         ),
@@ -65,9 +65,9 @@ export default function Toaster(props) {
       }}
       toastOptions={{
         style: {
-          background: theme == "dark" ?  "#ffffff":"black",
-          color: theme == "dark" ?  "black":"#ffffff",
-          border: "1px solid #e2e8f0",
+          background: theme == "dark" ? "#1a1a1c" :"#ffffff",
+          color: theme == "dark" ? "#fefefe" :"black",
+          border: theme == "dark" ? "1px solid #1a1a1" : "1px solid #e2e8f0",
           borderRadius: "8px",
           padding: "16px",
           boxShadow:

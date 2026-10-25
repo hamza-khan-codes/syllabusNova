@@ -2,13 +2,20 @@ import { db } from "@/firebase/config";
 import {
   addDoc,
   collection,
+  collectionGroup,
   doc,
   getDoc,
   getDocs,
+  query,
   serverTimestamp,
   setDoc,
+  Timestamp,
+  updateDoc,
+  where,
   writeBatch,
 } from "firebase/firestore";
+import { authState } from "./authService";
+import { useSelector } from "react-redux";
 
 // SET ===== =>
 
@@ -50,6 +57,16 @@ export const setQuestions = async (testId, questions) => {
   await Promise.all(promises);
 };
 
+// Create new user
+export const setNewUser = async (user, uid) => {
+  await setDoc(doc(db, "users", uid), {
+    ...user,
+    uid,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  })
+}
+
 // ======= GET ======= =>
 
 // get all Data
@@ -89,7 +106,7 @@ export const getSubData = async (name, id, subName) => {
       ...doc.data(),
     }));
   }
-  throw new Error("Data does not exist.! - getSubCollectionData :: service");
+  return null
 };
 
 // get single result
@@ -103,7 +120,7 @@ export const getResult = async (id) => {
   throw new Error("Data does not exist.! - getResult :: service");
 };
 
-// get user Result
+// get all Result
 export const getAllResult = async () => {
   const snapshot = await getDocs(collection(db, "results"));
 
@@ -120,6 +137,69 @@ export const getAllResult = async () => {
 
   return results;
 };
+
+// get User's results
+export async function getUserResults(uid) {
+  const q = query(
+    collection(db, "results"),
+    where("user.uid", "==", uid)
+  );
+
+  const snapshot = await getDocs(q);
+
+  const results = snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  return results
+
+}
+
+
+// get Current user 
+export async function getCurrentUser() {
+  return new Promise((resolve, reject) => {
+    authState(async (User) => {
+      try {
+        if (!User) {
+          resolve(null);
+          return;
+        }
+
+        const userDoc = await getDoc(
+          doc(db, "users", User.uid)
+        );
+
+        if (userDoc.exists()) {
+          resolve(userDoc.data());
+          return;
+        }
+
+        resolve(null);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+}
+
+// Get All questions from all test
+
+export const getAllQuestionsFromAllTests = async () => {
+  const questionsRef = collectionGroup(db, "questions");
+  const snapshot = await getDocs(questionsRef);
+
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    testId: doc.ref.parent.parent?.id,
+    ...doc.data(),
+  }));
+};
+
+
+
+
 
 
 // ===================== Remove/
@@ -141,4 +221,20 @@ export async function deleteAllResults() {
   } catch (error) {
     console.error("Error deleting results:", error);
   }
+}
+
+// ========================= Update
+
+// Update User 
+export async function updateUser(uid, update) {
+  await updateDoc(doc(db, "users", uid), { ...update, updatedAt: new Date(), })
+}
+
+// Update Data
+export async function updateTest(id, update) {
+  const refTest = doc(db, "tests", id)
+  await updateDoc(refTest, {
+    ...update,
+    updatedAt: serverTimestamp(),
+  })
 }

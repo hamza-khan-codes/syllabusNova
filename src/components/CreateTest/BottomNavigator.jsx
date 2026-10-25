@@ -22,6 +22,8 @@ export default function BottomNavigator() {
     }
     dispatch(setCurrentStep(nextStep.step));
     dispatch(completeStep(createTest.workflow.currentStep));
+    console.log()
+    return 
     navigate(nextStep.path);
   };
   return (

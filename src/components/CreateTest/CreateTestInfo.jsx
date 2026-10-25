@@ -26,7 +26,7 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import createTestSchema from "@/schema/createTestSchema";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import imgController from "@/controllers/imgController";
 import { useDispatch, useSelector } from "react-redux";
@@ -41,6 +41,8 @@ import { DevTool } from "@hookform/devtools";
 import StepTreaker from "./StepTreaker";
 import { ROUTES } from "@/constant/routes";
 import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
+import { updateTestController } from "@/controllers/Create Test/createTestControllers";
+import getInsertNewItemInArray from "@/utils/getInsertNewItemInArray";
 
 const categories = [
   "Mathematics",
@@ -126,6 +128,7 @@ const difficulties = ["Easy", "Medium", "Hard"];
 export default function CreateTestInfo() {
   const dispatch = useDispatch();
   const createTest = useSelector((state) => state.createTest);
+  const { testId } = useParams()
 
   const { register, handleSubmit, formState, control } = useForm({
     resolver: zodResolver(createTestSchema),
@@ -144,8 +147,9 @@ export default function CreateTestInfo() {
   const navigate = useNavigate();
 
   // Submit Function
-
+  console.log("CREATE TEST info :", createTest)
   const onSubmit = async (data) => {
+    let toastId
     try {
       const file = data.cover?.[0];
       console.log(data);
@@ -164,21 +168,39 @@ export default function CreateTestInfo() {
         cover: coverUrl,
       };
       dispatch(updateInfo(payload));
+
       const updatedCreateTest = {
-        ...createTest,
         info: {
           ...createTest.info,
           ...payload,
         },
+        workflow: {
+          ...createTest.workflow,
+          completed: getInsertNewItemInArray(createTest.workflow.completed, WORKFLOW_CREATETEST_STEPS.steps[0].step),
+          previousStep: WORKFLOW_CREATETEST_STEPS.steps[0].step,
+          visited: getInsertNewItemInArray(createTest.workflow.visited,
+            WORKFLOW_CREATETEST_STEPS.steps[1].step
+          ),
+          currentStep: WORKFLOW_CREATETEST_STEPS.steps[1].step,
+          nextStep: WORKFLOW_CREATETEST_STEPS.steps[2].step,
+        }
       };
-      console.log("DAtA:", updatedCreateTest);
 
-      localStorage.setItem("createTest", JSON.stringify(updatedCreateTest)); 
+      console.log("UPDATEED :", updatedCreateTest)
+
+      toastId = toast.loading("Updating test...");
+      await updateTestController(testId, updatedCreateTest)
+      toast.success("Updated successfully!", {
+        id: toastId,
+      });
       dispatch(setCurrentStep(WORKFLOW_CREATETEST_STEPS.steps[1].step));
       dispatch(completeStep(WORKFLOW_CREATETEST_STEPS.steps[0].step));
-      navigate(ROUTES.TESTSTRUCTURE);
+      navigate(ROUTES.CREATETEST + "/" + testId + "/" + ROUTES.TESTSTRUCTURE);
     } catch (error) {
       console.error(error);
+      toast.error("Error !" + error, {
+        id: toastId,
+      });
     }
   };
 
@@ -332,8 +354,8 @@ export default function CreateTestInfo() {
               </div>
             </div> */}
 
-          <StepTreaker/> 
-            
+            <StepTreaker />
+
 
             {/* ================= CONTENT ================= */}
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
@@ -571,7 +593,7 @@ export default function CreateTestInfo() {
                                         difficulty === "Easy" && "bg-success",
                                         difficulty === "Medium" && "bg-primary",
                                         difficulty === "Hard" &&
-                                          "bg-destructive",
+                                        "bg-destructive",
                                       ].join(" ")}
                                     />
 

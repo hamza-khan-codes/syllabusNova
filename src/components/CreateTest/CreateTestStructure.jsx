@@ -15,11 +15,15 @@ import {
   Lock,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { completeStep, setCurrentStep, updateStructure } from "@/features/CreateTest/createTestSlices";
+import { completeStep, setCurrentStep, updateCreateTest, updateStructure } from "@/features/CreateTest/createTestSlices";
 import { ROUTES } from "@/constant/routes";
 import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import StepTreaker from "./StepTreaker";
+import { updateTestController } from "@/controllers/Create Test/createTestControllers";
+import Toaster from "../ui/sonner";
+import { toast } from "sonner";
+import getInsertNewItemInArray from "@/utils/getInsertNewItemInArray";
 
 /* =========================================================
    ZOD SCHEMA
@@ -135,6 +139,7 @@ export default function CreateTestStructure({
   onContinue,
 }) {
   const dispatch = useDispatch()
+  const { testId } = useParams()
   const createTest = useSelector((state) => state.createTest);
   const navigate = useNavigate()
   const {
@@ -164,7 +169,7 @@ export default function CreateTestStructure({
           marks: 2,
           passingMarks: 32,
           negativeMarks: 0,
-          sectionId:crypto.randomUUID()
+          sectionId: crypto.randomUUID()
         },
         {
           title: "Section 2",
@@ -172,7 +177,7 @@ export default function CreateTestStructure({
           marks: 2,
           passingMarks: 32,
           negativeMarks: 0,
-          sectionId:crypto.randomUUID()
+          sectionId: crypto.randomUUID()
         },
       ],
     },
@@ -269,47 +274,71 @@ export default function CreateTestStructure({
   /* =========================================================
      SUBMIT
   ========================================================= */
+  console.log("Redex CreateTest Structure :", createTest)
 
-  const onSubmit = (data) => {
-    console.log("STRUCTURE DATA:", data, structureType);
+  const onSubmit = async (data) => {
+    let toastId
+    try {
 
-    // For Multi Section
-    let questions =
-      !(structureType === "single") &&
-      data.sections.reduce((a, b) => {
-        return a.questions + b.questions;
+      console.log("STRUCTURE DATA:", data, structureType);
+
+      // For Multi Section
+      let Questions =
+        !(structureType === "single") &&
+        data.sections.reduce((a, b) => {
+          return a.questions + b.questions;
+        });
+
+      let marks =
+        !(structureType === "single") &&
+        data.sections.reduce((a, b) => {
+          return a.marks + b.marks;
+        }) * Questions;
+
+      console.log("marks", marks);
+
+      const payload = {
+        ...data,
+        isSectionWise: !(structureType === "single"),
+        sections: !(structureType === "single") ? data.sections : [],
+      };
+
+      dispatch(updateStructure(payload));
+
+      const updatedCreateTest = {
+        structure: {
+          ...createTest.structure,
+          ...payload,
+        },
+        workflow: {
+          ...createTest.workflow,
+          completed: getInsertNewItemInArray(createTest.workflow.completed,
+            WORKFLOW_CREATETEST_STEPS.steps[1].step)
+          ,
+          previousStep: WORKFLOW_CREATETEST_STEPS.steps[1].step,
+          visited: getInsertNewItemInArray(createTest.workflow.visited,
+            WORKFLOW_CREATETEST_STEPS.steps[2].step)
+          ,
+          currentStep: WORKFLOW_CREATETEST_STEPS.steps[2].step,
+          nextStep: WORKFLOW_CREATETEST_STEPS.steps[3].step,
+        }
+      };
+      console.log("UPDATE Structure :",updatedCreateTest)
+
+      toastId = toast.loading("Updating test...");
+      await updateTestController(testId, updatedCreateTest)
+      toast.success("Updated successfully!", {
+        id: toastId,
       });
-    let marks =
-      !(structureType === "single") &&
-      data.sections.reduce((a, b) => {
-        return a.marks + b.marks;
-      }) * questions;
-
-    console.log("Question", questions);
-    console.log("marks", marks);
-
-    const payload = {
-      ...data,
-      isSectionWise: !(structureType === "single"),
-      sections: !(structureType === "single") ? data.sections : [],
-      
-    };
-
-    delete payload.structureType;
-
-    const updatedCreateTest = {
-      ...createTest,
-      structure: {
-        ...createTest.structure,
-        ...payload,
-      },
-    };
-    console.log(payload)
-    dispatch(updateStructure(payload));
-    localStorage.setItem("createTest", JSON.stringify(updatedCreateTest));
-    dispatch(setCurrentStep(WORKFLOW_CREATETEST_STEPS.steps[2].step));
-    dispatch(completeStep(WORKFLOW_CREATETEST_STEPS.steps[1].step));
-    navigate(ROUTES.TESTSETTING);
+      dispatch(setCurrentStep(WORKFLOW_CREATETEST_STEPS.steps[2].step));
+      dispatch(completeStep(WORKFLOW_CREATETEST_STEPS.steps[1].step));
+      navigate(ROUTES.CREATETEST + "/" + testId + "/" + ROUTES.TESTSETTING);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error ! "+ error, {
+        id: toastId,
+      });
+    }
   };
 
   /* =========================================================
@@ -322,7 +351,7 @@ export default function CreateTestStructure({
       questions: 10,
       marks: 10,
       passingMarks: 5,
-      sectionId:crypto.randomUUID()
+      sectionId: crypto.randomUUID()
     });
   };
 
@@ -331,6 +360,7 @@ export default function CreateTestStructure({
       onSubmit={handleSubmit(onSubmit)}
       className="min-h-full bg-background text-foreground"
     >
+      <Toaster />
       {/* =====================================================
           PAGE HEADER
       ===================================================== */}
@@ -346,8 +376,8 @@ export default function CreateTestStructure({
       {/* ===============================================
            STEPS
           ================================================ */}
-          <StepTreaker/> 
-      
+      <StepTreaker />
+
 
       {/* =====================================================
           STRUCTURE TYPE
@@ -365,10 +395,9 @@ export default function CreateTestStructure({
           }
           className={`
             relative rounded-xl border p-6 text-left transition-all
-            ${
-              structureType === "single"
-                ? "border-primary bg-primary/5 ring-1 ring-primary"
-                : "border-border bg-card hover:border-primary/50"
+            ${structureType === "single"
+              ? "border-primary bg-primary/5 ring-1 ring-primary"
+              : "border-border bg-card hover:border-primary/50"
             }
           `}
         >
@@ -378,10 +407,9 @@ export default function CreateTestStructure({
             <div
               className={`
                 flex h-6 w-6 items-center justify-center rounded-full border
-                ${
-                  structureType === "single"
-                    ? "border-primary bg-primary"
-                    : "border-border"
+                ${structureType === "single"
+                  ? "border-primary bg-primary"
+                  : "border-border"
                 }
               `}
             >
@@ -396,10 +424,9 @@ export default function CreateTestStructure({
           <div
             className={`
               mb-5 flex h-12 w-12 items-center justify-center rounded-xl
-              ${
-                structureType === "single"
-                  ? "bg-primary/10 text-primary"
-                  : "bg-secondary text-muted-foreground"
+              ${structureType === "single"
+                ? "bg-primary/10 text-primary"
+                : "bg-secondary text-muted-foreground"
               }
             `}
           >
@@ -430,10 +457,9 @@ export default function CreateTestStructure({
           }
           className={`
             relative rounded-xl border p-6 text-left transition-all
-            ${
-              structureType === "multiple"
-                ? "border-primary bg-primary/5 ring-1 ring-primary"
-                : "border-border bg-card hover:border-primary/50"
+            ${structureType === "multiple"
+              ? "border-primary bg-primary/5 ring-1 ring-primary"
+              : "border-border bg-card hover:border-primary/50"
             }
           `}
         >
@@ -443,10 +469,9 @@ export default function CreateTestStructure({
             <div
               className={`
                 flex h-6 w-6 items-center justify-center rounded-full border
-                ${
-                  structureType === "multiple"
-                    ? "border-primary bg-primary"
-                    : "border-border"
+                ${structureType === "multiple"
+                  ? "border-primary bg-primary"
+                  : "border-border"
                 }
               `}
             >
@@ -461,10 +486,9 @@ export default function CreateTestStructure({
           <div
             className={`
               mb-5 flex h-12 w-12 items-center justify-center rounded-xl
-              ${
-                structureType === "multiple"
-                  ? "bg-primary/10 text-primary"
-                  : "bg-secondary text-muted-foreground"
+              ${structureType === "multiple"
+                ? "bg-primary/10 text-primary"
+                : "bg-secondary text-muted-foreground"
               }
             `}
           >

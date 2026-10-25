@@ -9,6 +9,7 @@ import {
   resentVerificationEmail,
   updateUserProfile,
 } from "@/services/authService";
+import { setNewUser, updateUser } from "@/services/firestoreService";
 import getFirebaseAuthError from "@/utils/getFirebaseAuthError";
 import getUsersMailBoxUrl from "@/utils/getUsersMailBoxUrl";
 
@@ -25,7 +26,7 @@ export async function RegisterAndVarifyController(email, password, name) {
   } else {
     const mailBoxUrl = getUsersMailBoxUrl(email);
 
-    await registerUserAndVerify(email, password, name);
+    const User = await registerUserAndVerify(email, password, name);
     toast.success(`A verification email has been sent to your inbox.`, {
       action: {
         label: "Open",
@@ -33,7 +34,27 @@ export async function RegisterAndVarifyController(email, password, name) {
       },
       duration: 30000,
     });
+    return User
   }
+}
+
+
+//  create new user in DB
+export async function createNewUserController(user,uid) {
+  if (!user || !uid) {
+    throw new Error("User and uid must enter.");
+  }
+  await setNewUser(user, uid)
+  return true
+}
+
+// update user 
+export async function updateUserController(update,uid) {
+    if (!user || !uid) {
+    throw new Error("User and uid must enter.");
+  }
+  updateUser(uid, update)
+  return true;
 }
 
 // USER-STATE - Controller

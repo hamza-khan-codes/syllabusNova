@@ -20,11 +20,11 @@ export default function StepTreaker() {
   // Keep URL synced with workflow
   useEffect(() => {
     if (!activeWorkflowStep?.path) return;
-
-    if (activeWorkflowStep.path !== location.pathname) {
-      navigate(activeWorkflowStep.path, {
-        replace: true,
-      });
+    const currentPath = location.pathname.split("/").pop();
+    if (activeWorkflowStep.path !== currentPath) {
+      // navigate(activeWorkflowStep.path, {
+      //   replace: true,
+      // });
     }
   }, [activeWorkflowStep?.path, location.pathname, navigate]);
 

@@ -32,6 +32,11 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constant/routes";
+import { addTestController, setQuestionsController } from "@/controllers/Create Test/createTestControllers";
+import createTestInitialState from "@/features/CreateTest/createTestInitialState";
+import Toaster from "../ui/sonner";
+import { toast } from "sonner";
+import { addQuestion } from "@/features/CreateTest/createTestSlices";
 
 const sidebarItems = [
   { label: "Dashboard", icon: LayoutDashboard },
@@ -148,13 +153,33 @@ const benefits = [
 ];
 
 export default function CreateTestHome() {
-    const navigate = useNavigate()
-  const handleCreateTest = () => {
-    navigate(ROUTES.TESTINFO)
+  const navigate = useNavigate()
+
+  const handleCreateTest = async () => {
+    const toastId = toast.loading("Creating new test...")
+    try {
+      const {
+        questions,
+        ...Data
+      } = createTestInitialState
+      const snapShot = await addTestController(Data)
+      const { id } = snapShot
+      if (!id) throw new Error("Something went wrong");
+      toast.success("Successfully Created!",{
+        id: toastId,
+      });
+      navigate(id + "/" + ROUTES.TESTINFO)
+    } catch (error) {
+      console.error(error);
+      toast.error(error, {
+        id: toastId,
+      });
+    }
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Toaster />
       <div className="flex min-h-screen">
 
 

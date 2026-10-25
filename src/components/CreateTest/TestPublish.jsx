@@ -21,7 +21,7 @@ import {
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Badge } from "../common/ui/Badge";
 import { Dialog, DialogContent } from "../ui/dialog";
@@ -34,14 +34,17 @@ import {
 import {
   addTestController,
   setQuestionsController,
+  updateTestController,
 } from "@/controllers/Create Test/createTestControllers";
 
 import { PUBLIC_APPROVAL_STEPS } from "@/constant/createTest/progressLoadingMsgs";
 import { ROUTES } from "@/constant/routes";
 
 import PublishTestPopPop from "./PublishTestPopPop";
+import { toast } from "sonner";
 
 export default function TestPublish() {
+  const { testId } = useParams();
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -115,9 +118,8 @@ export default function TestPublish() {
       {
         id: "structure",
         label: "Structure configured",
-        description: `${totalQuestions} questions · ${
-          structure?.totalMarks || 0
-        } marks`,
+        description: `${totalQuestions} questions · ${structure?.totalMarks || 0
+          } marks`,
         completed: totalQuestions > 0,
       },
       {
@@ -202,48 +204,36 @@ export default function TestPublish() {
           uid: auth?.user?.uid,
           name: auth?.user?.displayName,
         },
-      };
+      };``
 
       await delay(100);
 
       setDescription(
         PUBLIC_APPROVAL_STEPS?.[2] ||
-          "Preparing questions..."
+        "Preparing questions..."
       );
 
       setProgress(50);
 
       dispatch(updatePublish(data));
 
-      localStorage.setItem(
-        "createTest",
-        JSON.stringify(updatedCreateTest)
-      );
+
 
       const {
         workflow,
         edit,
         error: reduxError,
         loading: reduxLoading,
-        questions: removedQuestions,
-        ...saveInFireStoreTests
+        publish,
+        
       } = updatedCreateTest;
+      const saveInFireStoreTests = 
 
-      const saveInFireStoreQuestions =
-        updatedCreateTest.questions || [];
-
-      const testRef = await addTestController(
-        saveInFireStoreTests
-      );
-
-      await setQuestionsController(
-        testRef.id,
-        saveInFireStoreQuestions
-      );
+      // await updateTestController(testId, saveInFireStoreTests)
 
       setDescription(
         PUBLIC_APPROVAL_STEPS?.[3] ||
-          "Saving your test..."
+        "Saving your test..."
       );
 
       setProgress(66.66666666666667);
@@ -252,7 +242,7 @@ export default function TestPublish() {
 
       setDescription(
         PUBLIC_APPROVAL_STEPS?.[4] ||
-          "Finalizing publication..."
+        "Finalizing publication..."
       );
 
       setProgress(83.33333333333334);
@@ -261,14 +251,13 @@ export default function TestPublish() {
 
       setDescription(
         PUBLIC_APPROVAL_STEPS?.[5] ||
-          "Test published successfully!"
+        "Test published successfully!"
       );
 
       setProgress(100);
 
       await delay(500);
 
-      // localStorage.removeItem("createTest");
 
       dispatch(resetCreateTest());
 
@@ -285,7 +274,7 @@ export default function TestPublish() {
 
       setError(
         err?.message ||
-          "Something went wrong while publishing the test."
+        "Something went wrong while publishing the test."
       );
     }
 
@@ -509,11 +498,11 @@ export default function TestPublish() {
                         const percentage =
                           section.questions > 0
                             ? Math.min(
-                                (sectionQuestions /
-                                  section.questions) *
-                                  100,
-                                100
-                              )
+                              (sectionQuestions /
+                                section.questions) *
+                              100,
+                              100
+                            )
                             : 0;
 
                         return (
@@ -754,11 +743,10 @@ export default function TestPublish() {
 
                 <div className="mt-5 min-w-0 space-y-3">
                   <label
-                    className={`block min-w-0 cursor-pointer rounded-xl border p-4 transition ${
-                      visibility === "public"
+                    className={`block min-w-0 cursor-pointer rounded-xl border p-4 transition ${visibility === "public"
                         ? "border-primary bg-primary/5"
                         : "border-border hover:bg-muted/50"
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -769,11 +757,10 @@ export default function TestPublish() {
 
                     <div className="flex min-w-0 gap-3">
                       <div
-                        className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg ${
-                          visibility === "public"
+                        className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg ${visibility === "public"
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground"
-                        }`}
+                          }`}
                       >
                         <Users className="size-4" />
                       </div>
@@ -792,11 +779,10 @@ export default function TestPublish() {
                   </label>
 
                   <label
-                    className={`block min-w-0 cursor-pointer rounded-xl border p-4 transition ${
-                      visibility === "private"
+                    className={`block min-w-0 cursor-pointer rounded-xl border p-4 transition ${visibility === "private"
                         ? "border-primary bg-primary/5"
                         : "border-border hover:bg-muted/50"
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -807,11 +793,10 @@ export default function TestPublish() {
 
                     <div className="flex min-w-0 gap-3">
                       <div
-                        className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg ${
-                          visibility === "private"
+                        className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg ${visibility === "private"
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground"
-                        }`}
+                          }`}
                       >
                         <Shield className="size-4" />
                       </div>
@@ -902,145 +887,144 @@ export default function TestPublish() {
         </form>
       </div>
 
-{/* =====================================
+      {/* =====================================
     PUBLISHING PROGRESS DIALOG
 ====================================== */}
 
-<Dialog open={loading}>
-  <DialogContent
-    showCloseButton={false}
-    className="box-border w-[calc(100vw-2rem)] max-w-md overflow-hidden rounded-2xl border-border bg-card p-0 shadow-xl"
-  >
-    <div className="min-w-0 p-6 sm:p-7">
-      {/* Header */}
+      <Dialog open={loading}>
+        <DialogContent
+          showCloseButton={false}
+          className="box-border w-[calc(100vw-2rem)] max-w-md overflow-hidden rounded-2xl border-border bg-card p-0 shadow-xl"
+        >
+          <div className="min-w-0 p-6 sm:p-7">
+            {/* Header */}
 
-      <div className="flex min-w-0 flex-col items-center text-center">
-        {/* Progress Circle */}
+            <div className="flex min-w-0 flex-col items-center text-center">
+              {/* Progress Circle */}
 
-        <div className="relative mb-6 size-24 shrink-0">
-          <svg
-            className="size-full -rotate-90"
-            viewBox="0 0 100 100"
-          >
-            {/* Background circle */}
-
-            <circle
-              cx="50"
-              cy="50"
-              r="44"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="7"
-              className="text-muted"
-            />
-
-            {/* Progress circle */}
-
-            <circle
-              cx="50"
-              cy="50"
-              r="44"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="7"
-              strokeLinecap="round"
-              className="text-primary transition-all duration-500"
-              strokeDasharray="276.48"
-              strokeDashoffset={
-                276.48 * ((100 - progress) / 100)
-              }
-            />
-          </svg>
-
-          {/* Percentage */}
-
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xl font-bold text-foreground">
-              {Math.round(progress)}%
-            </span>
-          </div>
-        </div>
-
-        {/* Title */}
-
-        <h2 className="break-words text-lg font-bold text-foreground">
-          Publishing your test
-        </h2>
-
-        {/* Current description */}
-
-        <p className="mt-2 max-w-sm break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
-          {typeof description === "string"
-            ? description
-            : description?.message ||
-              description?.title ||
-              "Preparing your test..."}
-        </p>
-      </div>
-
-      {/* Main Progress Bar */}
-
-      <div className="mt-7 w-full min-w-0">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-500"
-            style={{
-              width: `${Math.min(Math.max(progress, 0), 100)}%`,
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Progress Steps */}
-
-      <div className="mt-6 min-w-0 space-y-3">
-        {PUBLIC_APPROVAL_STEPS?.slice(0, 6).map(
-          (step, index) => {
-            const stepProgress =
-              ((index + 1) / 6) * 100;
-
-            const completed =
-              progress >= stepProgress;
-
-            const stepText =
-              typeof step === "string"
-                ? step
-                : step?.message ||
-                  step?.title ||
-                  `Step ${index + 1}`;
-
-            return (
-              <div
-                key={index}
-                className="flex min-w-0 items-center gap-3"
-              >
-                {/* Status */}
-
-                {completed ? (
-                  <CheckCircle2 className="size-4 shrink-0 text-success" />
-                ) : (
-                  <div className="size-4 shrink-0 rounded-full border-2 border-border" />
-                )}
-
-                {/* Step Text */}
-
-                <span
-                  className={`min-w-0 break-words text-xs leading-5 ${
-                    completed
-                      ? "font-medium text-foreground"
-                      : "text-muted-foreground"
-                  }`}
+              <div className="relative mb-6 size-24 shrink-0">
+                <svg
+                  className="size-full -rotate-90"
+                  viewBox="0 0 100 100"
                 >
-                  {stepText}
-                </span>
+                  {/* Background circle */}
+
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="44"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="7"
+                    className="text-muted"
+                  />
+
+                  {/* Progress circle */}
+
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="44"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="7"
+                    strokeLinecap="round"
+                    className="text-primary transition-all duration-500"
+                    strokeDasharray="276.48"
+                    strokeDashoffset={
+                      276.48 * ((100 - progress) / 100)
+                    }
+                  />
+                </svg>
+
+                {/* Percentage */}
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xl font-bold text-foreground">
+                    {Math.round(progress)}%
+                  </span>
+                </div>
               </div>
-            );
-          }
-        )}
-      </div>
-    </div>
-  </DialogContent>
-</Dialog>
+
+              {/* Title */}
+
+              <h2 className="break-words text-lg font-bold text-foreground">
+                Publishing your test
+              </h2>
+
+              {/* Current description */}
+
+              <p className="mt-2 max-w-sm break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                {typeof description === "string"
+                  ? description
+                  : description?.message ||
+                  description?.title ||
+                  "Preparing your test..."}
+              </p>
+            </div>
+
+            {/* Main Progress Bar */}
+
+            <div className="mt-7 w-full min-w-0">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{
+                    width: `${Math.min(Math.max(progress, 0), 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Progress Steps */}
+
+            <div className="mt-6 min-w-0 space-y-3">
+              {PUBLIC_APPROVAL_STEPS?.slice(0, 6).map(
+                (step, index) => {
+                  const stepProgress =
+                    ((index + 1) / 6) * 100;
+
+                  const completed =
+                    progress >= stepProgress;
+
+                  const stepText =
+                    typeof step === "string"
+                      ? step
+                      : step?.message ||
+                      step?.title ||
+                      `Step ${index + 1}`;
+
+                  return (
+                    <div
+                      key={index}
+                      className="flex min-w-0 items-center gap-3"
+                    >
+                      {/* Status */}
+
+                      {completed ? (
+                        <CheckCircle2 className="size-4 shrink-0 text-success" />
+                      ) : (
+                        <div className="size-4 shrink-0 rounded-full border-2 border-border" />
+                      )}
+
+                      {/* Step Text */}
+
+                      <span
+                        className={`min-w-0 break-words text-xs leading-5 ${completed
+                            ? "font-medium text-foreground"
+                            : "text-muted-foreground"
+                          }`}
+                      >
+                        {stepText}
+                      </span>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

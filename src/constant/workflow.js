@@ -24,12 +24,3 @@ export const WORKFLOW_CREATETEST_STEPS = {
     },
   ],
 };
-
-// {
-//   steps:["info",
-//   "structure",
-//   "settings",
-//   "Questions",
-//     "publish"],
-//   paths:[]
-// }

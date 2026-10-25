@@ -14,9 +14,9 @@ createRoot(document.getElementById("root")).render(
     <Provider store={store}>
       <AuthProvider>
         <ThemeProvider>
-          <CreateTestProvider>
+
             <App />
-          </CreateTestProvider>
+
         </ThemeProvider>
       </AuthProvider>
     </Provider>

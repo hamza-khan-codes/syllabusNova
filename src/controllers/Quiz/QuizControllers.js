@@ -4,7 +4,9 @@ import {
   getData,
   getResult,
   getSubData,
+  getUserResults,
 } from "@/services/firestoreService";
+import { useSelector } from "react-redux";
 
 
 // Get ===================>
@@ -39,8 +41,6 @@ export async function getQuizQuestionsController(id) {
     return data;
   } catch (error) {
     console.error("Error : getQuizQuestionsController ", error);
-    console.log("Error : Message ", error.message);
-    throw new Error("Error : getQuizQuestionsController ", error);
   }
 }
 
@@ -56,6 +56,17 @@ export async function getResultController(id) {
     throw new Error("Error : getResultController ", error);
   }
 }
+
+// get User Results
+export async function getUserResultsController(userID) {
+  try {
+    if (!userID) throw new Error("User ID Must enter");
+    return await getUserResults(userID)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 
 // Set =============>
 

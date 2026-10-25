@@ -10,14 +10,11 @@ import RegisPage from "@/pages/RegisPage";
 import Log from "@/pages/Log";
 import ForgotPasswoard from "@/pages/ForgotPasswoard";
 import CreateTest from "@/pages/Users/CreateTest";
-import BasicInfo from "@/components/CreateTest/BasicInfo";
-import TestSetting from "@/components/CreateTest/TestSetting";
-import TestStructure from "@/components/CreateTest/TestStructure";
+
 import AddQuestion from "@/components/CreateTest/AddQuestion";
 import TestPublish from "@/components/CreateTest/TestPublish";
 import AddNewQuestion from "@/components/CreateTest/AddNewQuestion";
 import AddedQuestionList from "@/components/CreateTest/AddedQuestionList";
-import CreateTestInitial from "@/components/CreateTest/CreateTestInitial";
 import ExploreQuiz from "@/pages/Users/ExploreQuiz";
 import ExploreHome from "@/components/Explore Test/ExploreHome";
 import ExploreCardInfo from "@/components/Explore Test/ExploreCardInfo";
@@ -32,6 +29,8 @@ import CreateTestInfo from "@/components/CreateTest/CreateTestInfo";
 import CreateTestStructure from "@/components/CreateTest/CreateTestStructure";
 import CreateTestSetting from "@/components/CreateTest/CreateTestSetting";
 import IndualReview from "@/components/IndualQuiz/IndualReview";
+
+import CreateTestProvider from "@/app/Providers/CreateTestProvider";
 
 export default function AppRoutes() {
   return (
@@ -58,22 +57,21 @@ export default function AppRoutes() {
           <Route path={ROUTES.ATTEMPTEDTESTS} element={<AttemptedTests />} />
           <Route path={ROUTES.SETTINGSPAGE} element={<SettingsPage />} />
 
-          <Route path={ROUTES.CREATETEST} element={<CreateTest />}>
-            <Route index element={<CreateTestHome />} />
-            <Route element={<CreateTestInfo />} path={ROUTES.TESTINFO} />
-            <Route path={ROUTES.TESTSETTING} element={<CreateTestSetting />} />
-            <Route
-              path={ROUTES.TESTSTRUCTURE}
-              element={<CreateTestStructure />}
-            />
-            <Route path={ROUTES.TESTPUBLISH} element={<TestPublish />} />
-            <Route path={ROUTES.ADDQUESTION} element={<AddQuestion />} />
-            <Route path={ROUTES.ADDNEWQUESTION} element={<AddNewQuestion />} />
-            <Route
-              path={ROUTES.ADDNEWQUESTIONLIST}
-              element={<AddedQuestionList />}
-            />
+          <Route element={<CreateTestProvider />}>
+            <Route path={ROUTES.CREATETEST} element={<CreateTest />}>
+              <Route index element={<CreateTestHome />} />
+
+              <Route path={":testId/" + ROUTES.TESTINFO} element={<CreateTestInfo />} />
+              <Route path={":testId/" + ROUTES.TESTSTRUCTURE} element={<CreateTestStructure />} />
+              <Route path={":testId/" + ROUTES.TESTSETTING} element={<CreateTestSetting />} />
+              <Route path={":testId/" + ROUTES.ADDQUESTION} element={<AddQuestion />} />
+              <Route path={":testId/" + ROUTES.ADDNEWQUESTION} element={<AddNewQuestion />} />
+              <Route path={":testId/" + ROUTES.ADDNEWQUESTIONLIST} element={<AddedQuestionList />} />
+              <Route path={":testId/" + ROUTES.TESTPUBLISH} element={<TestPublish />} />
+            </Route>
+
           </Route>
+
 
           <Route path={ROUTES.EXPLOREQUIZ} element={<ExploreQuiz />}>
             <Route index element={<ExploreHome />} />
@@ -89,7 +87,7 @@ export default function AppRoutes() {
           />
 
           <Route path={ROUTES.RESULT + "/:quizId"} element={<IndualResult />} />
-          <Route path={ROUTES.REVIEWQUESTIONS + "/:quizId/:reviewQuizId"} element={<IndualReview/>} />
+          <Route path={ROUTES.REVIEWQUESTIONS + "/:quizId/:reviewQuizId"} element={<IndualReview />} />
         </Route>
 
         {/* Not found - Universal router */}

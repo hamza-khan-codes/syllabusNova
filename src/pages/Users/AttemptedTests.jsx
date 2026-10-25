@@ -20,9 +20,11 @@ import {
 } from "lucide-react";
 
 import MainLayout from "@/layouts/MainLayout";
-import { getAllResult } from "@/services/firestoreService";
+import { getAllResult, getUserResults } from "@/services/firestoreService";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constant/routes";
+import { useSelector } from "react-redux";
+import { getUserResultsController } from "@/controllers/Quiz/QuizControllers";
 
 /* =========================================================
    HELPERS
@@ -642,6 +644,7 @@ function AttemptedTestMobileCard({
 ========================================================= */
 
 export default function AttemptedTests() {
+const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const [results, setResults] = useState([]);
@@ -664,7 +667,7 @@ export default function AttemptedTests() {
       try {
         setLoading(true);
 
-        const response = await getAllResult();
+        const response = await getUserResultsController(user.uid)
 
         console.log("Results:", response);
 

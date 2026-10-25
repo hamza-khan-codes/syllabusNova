@@ -31,8 +31,7 @@ export async function logOut() {
 export async function registerUserAndVerify(
   email,
   password,
-  UserName = null,
-  photoUrl = null,
+
 ) {
   const userCredential = await createUserWithEmailAndPassword(
     auth,
@@ -41,9 +40,6 @@ export async function registerUserAndVerify(
   );
 
   await sendEmailVerification(userCredential.user);
-
-  await updateUserProfileController(UserName, photoUrl);
-
   console.log("Verification email has been sent!");
 
   return userCredential;
@@ -71,6 +67,11 @@ export async function resentVerificationEmail() {
   });
 }
 
+
+
+// RESET password
 export async function forgotPassword(email) {
   return await sendPasswordResetEmail(auth, email);
 }
+
+
