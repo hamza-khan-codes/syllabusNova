@@ -1,17 +1,20 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { ROUTES } from "../constant/routes";
-import { useSelector } from "react-redux";
-import Loading from "@/components/common/Loading";
+import { useDispatch, useSelector } from "react-redux";
+import LoadingPage from "@/pages/LoadingPage";
+import { useEffect } from "react";
+import { authStart } from "@/features/Auth/authSlices";
 
 export default function ProtectedRoute() {
   const { user, loading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch()
+  console.log("USER", user)
+
 
 
   if (loading) {
     return (
-      <div className="absolute inset-0 bg-background flex justify-center items-center">
-        <Loading className={" w-10 h-10"}/>
-      </div>
+      <LoadingPage/>
     );
   }
   if (!user) {

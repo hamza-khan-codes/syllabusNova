@@ -37,7 +37,7 @@ export default function AppRoutes() {
     <>
       <Routes>
         {/* index Route */}
-        <Route index element={<Landing />} />
+        <Route path={ROUTES.HOME} element={<Landing />} />
 
         {/* Public Routes */}
         <Route element={<PublicRoute />}>

@@ -1,5 +1,8 @@
+import baseUrl from "./baseRoute";
+
+
 export const ROUTES = {
-  HOME: "/",
+  HOME: baseUrl,
 
   LOGIN: "/login",
   REGISTER: "/registration",
@@ -39,3 +42,6 @@ export const ROUTES = {
   ADMIN_USERS: "/admin/users",
 };
 
+Object.entries(ROUTES).forEach(([key, value]) => {
+  if(value.startsWith("/") && value !== baseUrl) ROUTES[key] = `${baseUrl.replace(/\/$/, "")}${value}`;
+});

@@ -16,6 +16,8 @@ import {
 } from "firebase/firestore";
 import { authState } from "./authService";
 import { useSelector } from "react-redux";
+import { authStateController } from "@/controllers/authControllers";
+import { resolve } from "path";
 
 // SET ===== =>
 
@@ -156,9 +158,36 @@ export async function getUserResults(uid) {
 
 }
 
+export const getCurrentUser = async () => {
+  return new Promise((resolve, reject) => {
+    try {
+
+      authStateController(async (User) => {
+        const currentUser = await getDBCurrentUser()
+
+        const USER = User
+          ? {
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName: currentUser.name,
+            emailVerified: User.emailVerified,
+            User: currentUser,
+            createdAt: currentUser.createdAt?.toMillis(),
+            updatedAt: currentUser.updatedAt?.toMillis(),
+
+          }
+          : null;
+        resolve(USER)
+      });
+    } catch (error) {
+      reject(error)
+    }
+  })
+}
 
 // get Current user 
-export async function getCurrentUser() {
+export async function getDBCurrentUser() {
+
   return new Promise((resolve, reject) => {
     authState(async (User) => {
       try {
@@ -178,7 +207,9 @@ export async function getCurrentUser() {
 
         resolve(null);
       } catch (error) {
-        reject(error);
+        console.error(error);
+
+        reject(null);
       }
     });
   });

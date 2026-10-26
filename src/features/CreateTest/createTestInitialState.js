@@ -1,8 +1,7 @@
 import { TEST_STATUS } from "@/constant/createTest/roleStatus";
 import { WORKFLOW_CREATETEST_STEPS } from "@/constant/workflow";
-import { getCurrentUser } from "@/services/firestoreService";
 
-const user = await getCurrentUser()
+
 
 
  const createTestInitialState = {
@@ -41,8 +40,8 @@ const user = await getCurrentUser()
   },
 
   creator: {
-    uid: user.uid,
-    name: user.name,
+    uid:  null,
+    name:  null,
   },
 
    questions: [],

@@ -15,19 +15,25 @@ export default function CreateTestProvider({ children }) {
     console.log("Test ID", testId)
     useEffect(() => {
         const fetchData = async () => {
-            let q = createTestInitialState.questions
-            const res = await getQuizMetaDataController(testId)
-            const questions = await getQuizQuestionsController(testId)
-            console.log("Firebase Question :: ", questions)
-            console.log("Firebase test :: ", res)
-            if (questions) {
-                q = questions.map((Q) =>({
-                    ...Q,
-                    createdAt: questions?.createdAt?.toDate().toISOString(),
-                    updatedAt: questions?.updatedAt?.toDate().toISOString()
-                }))
+            try {
+                
+                let q = createTestInitialState.questions
+                const res = await getQuizMetaDataController(testId)
+                const questions = await getQuizQuestionsController(testId)
+                console.log("Firebase Question :: ", questions)
+                console.log("Firebase test :: ", res)
+                if (questions) {
+                    q = questions.map((Q) =>({
+                        ...Q,
+                        createdAt: questions?.createdAt?.toDate().toISOString(),
+                        updatedAt: questions?.updatedAt?.toDate().toISOString()
+                    }))
+                }
+                setTest({...res,questions:q})
+            } catch (error) {
+                console.error(error);
+                
             }
-            setTest({...res,questions:q})
         }
 
         if (testId) fetchData()

@@ -10,7 +10,7 @@ export const authReducers = {
     state.loading = false;
     state.error = null;
     state.user = action.payload;
-  },
+  }, 
   authFailure: (state, action) => {
     state.loading = false;
     state.error = action.payload;

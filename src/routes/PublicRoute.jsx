@@ -1,17 +1,40 @@
 import { ROUTES } from "@/constant/routes";
-import { useSelector } from "react-redux";
+import {  useDispatch, useSelector } from "react-redux";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import Loading from "@/components/common/Loading";
+
+import LoadingPage from "@/pages/LoadingPage";
+import { useEffect } from "react";
+import { authStart, authStateAndSuccess } from "@/features/Auth/authSlices";
+import { getCurrentUser } from "@/services/firestoreService";
 
 export default function PublicRoute() {
-  const { user, loading } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);  
   const location = useLocation();
+    const dispatch = useDispatch()
+    console.log("USER", user)
+    useEffect(() => {
+      dispatch(authStart())
+      const fetchUser = async () => {
+        try {
+          const user = await getCurrentUser()
+          console.log("user",user)
+          if (user) {
+            console.log("user",user)
+            
+            dispatch(authStateAndSuccess(user))
+          }
+          
+        } catch (error) {
+          
+        }
+      }
+      fetchUser()
+    },[])
+
 
   if (loading) {
     return (
-       <div className="absolute inset-0 bg-background flex justify-center items-center">
-        <Loading className={" w-10 h-10"}/>
-      </div>
+      <LoadingPage/>
     );
   }
 
