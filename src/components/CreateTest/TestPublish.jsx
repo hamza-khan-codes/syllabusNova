@@ -42,6 +42,7 @@ import { ROUTES } from "@/constant/routes";
 
 import PublishTestPopPop from "./PublishTestPopPop";
 import { toast } from "sonner";
+import { TEST_STATUS } from "@/constant/createTest/roleStatus";
 
 export default function TestPublish() {
   const { testId } = useParams();
@@ -198,13 +199,14 @@ export default function TestPublish() {
         publish: {
           ...createTest.publish,
           visibility: data.visibility,
+          status: TEST_STATUS.COMPLETED
         },
 
         creator: {
           uid: auth?.user?.uid,
           name: auth?.user?.displayName,
         },
-      };``
+      }; ``
 
       await delay(100);
 
@@ -219,17 +221,17 @@ export default function TestPublish() {
 
 
 
-      const {
-        workflow,
-        edit,
-        error: reduxError,
-        loading: reduxLoading,
-        publish,
-        
-      } = updatedCreateTest;
-      const saveInFireStoreTests = 
-
-      // await updateTestController(testId, saveInFireStoreTests)
+      console.log("TESTPUBLIST", {
+        publish: {
+          ...updatedCreateTest.publish
+        }
+      })
+      console.log("UPdating")
+      await updateTestController(testId, {
+        publish: {
+          ...updatedCreateTest.publish
+        }
+      })
 
       setDescription(
         PUBLIC_APPROVAL_STEPS?.[3] ||
@@ -744,8 +746,8 @@ export default function TestPublish() {
                 <div className="mt-5 min-w-0 space-y-3">
                   <label
                     className={`block min-w-0 cursor-pointer rounded-xl border p-4 transition ${visibility === "public"
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:bg-muted/50"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:bg-muted/50"
                       }`}
                   >
                     <input
@@ -758,8 +760,8 @@ export default function TestPublish() {
                     <div className="flex min-w-0 gap-3">
                       <div
                         className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg ${visibility === "public"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
                           }`}
                       >
                         <Users className="size-4" />
@@ -780,8 +782,8 @@ export default function TestPublish() {
 
                   <label
                     className={`block min-w-0 cursor-pointer rounded-xl border p-4 transition ${visibility === "private"
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:bg-muted/50"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:bg-muted/50"
                       }`}
                   >
                     <input
@@ -794,8 +796,8 @@ export default function TestPublish() {
                     <div className="flex min-w-0 gap-3">
                       <div
                         className={`mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg ${visibility === "private"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
                           }`}
                       >
                         <Shield className="size-4" />
@@ -1011,8 +1013,8 @@ export default function TestPublish() {
 
                       <span
                         className={`min-w-0 break-words text-xs leading-5 ${completed
-                            ? "font-medium text-foreground"
-                            : "text-muted-foreground"
+                          ? "font-medium text-foreground"
+                          : "text-muted-foreground"
                           }`}
                       >
                         {stepText}

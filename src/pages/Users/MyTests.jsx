@@ -361,7 +361,10 @@ export default function MyTests() {
         activeTab === "All Tests" ||
         (activeTab === "Published" && test.status === "published") ||
         (activeTab === "Drafts" && test.status === "draft") ||
-        (activeTab === "Archived" && test.status === "archived");
+        (activeTab === "Archived" && test.status === "archived") ||
+        (activeTab === "Completed" && test.status === "completed") ||
+        (activeTab === "Rejected" && test.status === "rejected") 
+        ;
 
       const matchesCategory =
         category === "All Categories" || test.category === category;
