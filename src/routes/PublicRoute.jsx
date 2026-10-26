@@ -4,8 +4,10 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import LoadingPage from "@/pages/LoadingPage";
 import { useEffect } from "react";
-import { authStart, authStateAndSuccess } from "@/features/Auth/authSlices";
+import { authFailure, authLogout, authStart, authStateAndSuccess } from "@/features/Auth/authSlices";
 import { getCurrentUser } from "@/services/firestoreService";
+import { auth } from "@/firebase/config";
+import { toast } from "sonner";
 
 export default function PublicRoute() {
   const { user, loading } = useSelector((state) => state.auth);  
@@ -22,10 +24,13 @@ export default function PublicRoute() {
             console.log("user",user)
             
             dispatch(authStateAndSuccess(user))
+          } else {
+            dispatch(authLogout())
           }
           
         } catch (error) {
-          
+          dispatch(authFailure(error))
+          toast.error(error)
         }
       }
       fetchUser()
