@@ -17,7 +17,6 @@ import {
 import { authState } from "./authService";
 import { useSelector } from "react-redux";
 import { authStateController } from "@/controllers/authControllers";
-import { resolve } from "path";
 
 // SET ===== =>
 
