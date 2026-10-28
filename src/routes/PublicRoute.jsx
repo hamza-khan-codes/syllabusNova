@@ -1,45 +1,47 @@
 import { ROUTES } from "@/constant/routes";
-import {  useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import LoadingPage from "@/pages/LoadingPage";
 import { useEffect } from "react";
 import { authFailure, authLogout, authStart, authStateAndSuccess } from "@/features/Auth/authSlices";
 import { getCurrentUser } from "@/services/firestoreService";
-import { auth } from "@/firebase/config";
+
 import { toast } from "sonner";
 
 export default function PublicRoute() {
-  const { user, loading } = useSelector((state) => state.auth);  
+  const { user, loading } = useSelector((state) => state.auth);
   const location = useLocation();
-    const dispatch = useDispatch()
-    console.log("USER", user)
-    useEffect(() => {
-      dispatch(authStart())
-      const fetchUser = async () => {
-        try {
-          const user = await getCurrentUser()
-          console.log("user",user)
-          if (user) {
-            console.log("user",user)
-            
-            dispatch(authStateAndSuccess(user))
-          } else {
-            dispatch(authLogout())
-          }
-          
-        } catch (error) {
-          dispatch(authFailure(error))
-          toast.error(error)
+  const dispatch = useDispatch()
+  console.log("USER", user)
+  useEffect(() => {
+    dispatch(authStart())
+
+    const fetchUser = async () => {
+      try {
+        console.log("Error")
+        const user = await getCurrentUser();
+        console.log("Error",user)
+        if (user) {
+          dispatch(authStateAndSuccess(user));
+          toast.success("Login successful!");
+        } else {
+          dispatch(authLogout());
+          toast.info("You have been logged out.");
         }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        dispatch(authFailure(error?.message || "Failed to fetch user"));
       }
-      fetchUser()
-    },[])
+    };
+
+    fetchUser()
+  }, [])
 
 
   if (loading) {
     return (
-      <LoadingPage/>
+      <LoadingPage />
     );
   }
 

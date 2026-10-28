@@ -156,7 +156,6 @@ const RegisPage = () => {
       );
 
       toast.success("Account created successfully!");
-      console.log("USER LJ",User)
       await createNewUserController(payload,User.user.uid)
       reset();
       removeImage();

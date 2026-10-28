@@ -159,34 +159,37 @@ export async function getUserResults(uid) {
 
 export const getCurrentUser = async () => {
   return new Promise((resolve, reject) => {
-    try {
 
-      authStateController(async (User) => {
+    authStateController(async (User) => {
+      try {
         const currentUser = await getDBCurrentUser()
-
         const USER = User
           ? {
-            uid: currentUser.uid,
-            email: currentUser.email,
-            displayName: currentUser.name,
-            emailVerified: User.emailVerified,
-            User: currentUser,
-            createdAt: currentUser.createdAt?.toMillis(),
-            updatedAt: currentUser.updatedAt?.toMillis(),
+            uid: currentUser?.uid,
+            email: currentUser?.email,
+            displayName: currentUser?.name,
+            emailVerified: User?.emailVerified,
+            User: {
+              ...currentUser,
+              createdAt: currentUser?.createdAt?.toMillis(),
+              updatedAt: currentUser?.updatedAt?.toMillis(),
+            },
+            createdAt: currentUser?.createdAt?.toMillis(),
+            updatedAt: currentUser?.updatedAt?.toMillis(),
 
           }
           : null;
         resolve(USER)
-      });
-    } catch (error) {
-      reject(error)
-    }
+      } catch (error) {
+        reject(error)
+      }
+    });
   })
 }
 
 // get Current user 
-export async function getDBCurrentUser() {
 
+export function getDBCurrentUser() {
   return new Promise((resolve, reject) => {
     authState(async (User) => {
       try {
@@ -206,13 +209,13 @@ export async function getDBCurrentUser() {
 
         resolve(null);
       } catch (error) {
-        console.error(error);
-
-        reject(null);
+        console.error("getDBCurrentUser:", error);
+        reject(error);
       }
     });
   });
 }
+
 
 // Get All questions from all test
 

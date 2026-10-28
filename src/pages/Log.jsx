@@ -20,10 +20,11 @@ import {
 } from "lucide-react";
 
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Log() {
+  const navigate = useNavigate()
   
   const {
     register,
@@ -45,6 +46,9 @@ export default function Log() {
       toast.success("Login successful!");
 
       reset();
+      navigate(ROUTES.DASHBOARD, {
+        replace:true
+      })
     } catch (error) {
       console.error("Login Component:", error);
 
